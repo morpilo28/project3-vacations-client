@@ -650,17 +650,25 @@ function paintModalElement(saveId, objToUpdate) {
 }
 
 function modalBodyForAdd(modalBody) {
+    const minDate =  getTodayDateStr();
+
     modalBody += `
             <label>Image: <br/>
                 <input id='addedImage' required type='file'><br/>
             </label><br>
             <label>Destination: <input id='addedDestination' required type='text'></label><br>
             <label>Description: <textarea id='addedDescription' required type='text'></textarea></label><br>
-            <label>From: <input id='addedFromDate' required type='date'></label><br>
-            <label>To: <input id='addedToDate' required type='date'></label><br>
+            <label>From: <input id='addedFromDate' required type='date' min='${minDate}'></label><br>
+            <label>To: <input id='addedToDate' required type='date' min='${minDate}'></label><br>
             <label>Price: <input id='addedPrice' required type='number' min='0'></label><br>`;
     return modalBody;
     /* <label>Image: <input id='addedImage' required type='text'></label><br> */
+}
+
+function getTodayDateStr() {
+    const date = new Date();
+    const dateFormatted = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+    return dateFormatted;
 }
 
 function modalBodyForUpdate(modalBody, objToUpdateId) {
@@ -672,24 +680,28 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
         fromDate: $(`#fromDate${objToUpdateId}`).text(),
         toDate: $(`#toDate${objToUpdateId}`).text(),
     };
-    let [fromDay, fromMonth, fromYear] = formatDate(objToEdit.fromDate);
-    let [toDay, toMonth, toYear] = formatDate(objToEdit.toDate);
+
+    let fullFromDateStr = formatDate(objToEdit.fromDate);
+    let fullToDateStr = formatDate(objToEdit.toDate);
+    const minDate =  getTodayDateStr();
+    
     modalBody += `
         <label>Image: <br/>
             <input id='editImage' required type='file' value='${objToEdit.image}'>
         </label><br>
         <label>Destination: <input id='editDestination' required type='text' value='${objToEdit.destination}'></label><br>
         <label>Description: <textarea id='editDescription' required type='text'>${objToEdit.description}</textarea></label><br>
-        <label>From: <input id='editFromDate' required type='date' value='${fromYear}-${fromMonth}-${fromDay}'></label><br>
-        <label>To: <input id='editToDate' required type='date' value='${toYear}-${toMonth}-${toDay}'></label><br>
+        <label>From: <input id='editFromDate' required type='date' min='${minDate}' value='${fullFromDateStr}'></label><br>
+        <label>To: <input id='editToDate' required type='date' min='${minDate}' value='${fullToDateStr}'></label><br>
         <label>Price: <input id='editPrice' required type='number' min='0' value='${objToEdit.price}'></label><br>
         `;
     return modalBody;
 }
 
 function formatDate(dateToFormat) {
-    dateToFormat = dateToFormat.split('-');
-    return dateToFormat;
+    let [day, month, year] = dateToFormat.split('-');
+    const fullDateStr = year +'-'+ month +'-'+ day;
+    return fullDateStr;
 }
 
 function closeModal() {
