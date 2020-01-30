@@ -613,7 +613,7 @@ function paintModalElement(saveId, objToUpdate) {
     }
     $('#main').append(`  
     <div id='modalElement'>
-        <div id="myModal" class="modal" role="dialog">
+        <div id="myModal" class="modal" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog modal-sm">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -711,10 +711,6 @@ function closeModal() {
 
 function displayVacationModal() {
     $('#myModal').modal('show');
-    /*  $('#myModal').modal({
-         backdrop: 'static',
-         keyboard: false
-     }); */
 }
 
 function onAddVacationEvent(createdVacation) {
