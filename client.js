@@ -436,7 +436,7 @@ function register() {
         for (let i = 0; i < idArray.length; i++) {
             emptyInputs(idArray[i]);
         }
-        registerView('registration succeeded');
+        navigate('login');
     }).catch(status => {
         console.log(status);
         if (status === 400) {
@@ -749,7 +749,7 @@ function createClientCard(vacation, isFollowed) {
                     <div id="description${vacation.id}">${vacation.description}</div>
                     <div id="price${vacation.id}">${vacation.price}$</div>
                     <div>
-                        <img id="img${vacation.id}" width='80' src="./styles/images/${vacation.image}" alt="${vacation.image}"/>
+                        <img id="img${vacation.id}" width='80' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
                     </div>
                     <div>
                         <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
@@ -758,6 +758,7 @@ function createClientCard(vacation, isFollowed) {
                     <button id='followBtn${vacation.id}' class="btnFollowPosition btn btn-success btn-circle btn-circle-sm m-1 ${isFollowed}">f</button>
                     <button id="followersBtn${vacation.id}" class="btnFollowersPosition btn btn-success  btn-circle-sm m-1">${vacation.followers}</button>
                 </div>`;
+                //./styles/images/${vacation.image}
 }
 
 function onEditVacationEvent(newEditedVacationValues) {
@@ -765,7 +766,7 @@ function onEditVacationEvent(newEditedVacationValues) {
     $(`#destination${newEditedVacationValues.id}`).replaceWith(`<div id="destination${newEditedVacationValues.id}"><b>${newEditedVacationValues.destination}</b></div>`);
     $(`#description${newEditedVacationValues.id}`).text(newEditedVacationValues.description);
     $(`#price${newEditedVacationValues.id}`).text(`${newEditedVacationValues.price}$`);
-    $(`#img${newEditedVacationValues.id}`).attr("src", `./styles/images/${newEditedVacationValues.image}`).attr("alt", newEditedVacationValues.image);
+    $(`#img${newEditedVacationValues.id}`).attr("src", `${app.serverImgBaseUrl + newEditedVacationValues.image}`).attr("alt", newEditedVacationValues.image);
     $(`#fromDate${newEditedVacationValues.id}`).text(newEditedVacationValues.fromDate);
     $(`#toDate${newEditedVacationValues.id}`).text(newEditedVacationValues.toDate);
     $(`#followersBtn${newEditedVacationValues.id}`).text(newEditedVacationValues.followers);
