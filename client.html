@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Travel</title>
+    <link rel="stylesheet" type="text/css" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./styles/fontawesome.min.css">
+    <link rel="stylesheet" href="./styles/solid.css">
+    <link rel="stylesheet" type="text/css" href="./styles/client.css">
+</head>
+
+<body>
+    <h1>Vacation Time</h1>
+    <div id='userNameForTitle'></div>
+    <nav id='nav'>
+        <a data-href='login' href='login'> Login |</a>
+        <a id='vacationsTableLink' data-href='vacations' href='vacations'> Vacations List |</a>
+        <a id='logout' data-href='logout' href='logout'> Logout </a>
+    </nav>
+    <br>
+    <main id="main"></main>
+     <script src="./node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
+    <script src="./client.js"></script>
+    <script src="./socket-listeners.js"></script>
+</body>
+
+</html>
