@@ -11,7 +11,7 @@
 
 const app = {
     baseEndPoint: `http://localhost:3201/`,
-    serverImgBaseUrl: 'http://localhost:3201/images/',
+    serverImgBaseUrl: 'http://localhost:3201/static/',
     END_POINTS: {
         vacations: 'vacations',
         login: 'login',
@@ -406,20 +406,30 @@ function onMoreDetails(res) {
 function registerView(note) {
     note = note ? note : '';
     const html = `
-    <h2>Register</h2>
-    <p>${note}</p>
-    <div>
-        <label>First Name: <input id='firstName'></label>
-        <label>Last Name: <input id='lastName'></label>
-        <label>User Name: <input id='userName'></label>
-        <label>Password: <input id='password' type='password'></label>
-        <div>  
-            <button id='register'>Register</button>
-        </div>
-    </div>
-    `;
+
+    <div class="form-signin">
+        <h1 class="h3 mb-3 font-weight-normal text-center"><b>Register</b></h1>
+        <b><p>${note}</p></b>
+        <label for="firstName" class="sr-only">First Name</label>
+        <input type="text" id='firstName' class="form-control" placeholder="First Name" required="" autofocus="">
+
+        <label for="lastName" class="sr-only">Last Name</label>
+        <input type="text" id='lastName' class="form-control" placeholder="Last Name" required="" autofocus="">
+
+        <label for="userName" class="sr-only">User Name</label>
+        <input type="text" id='userName' class="form-control" placeholder="User Name" required="" autofocus="">
+
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Password" required=""></br>
+        <button class="btn btn-lg btn-primary btn-block" id='register' type="submit">Register</button></br>
+        <p class='text-center'><b><u>Already member? <a id='loginPage' href='login'>Login Here!</u></b></a>
+  </div>`;
     printToHtml('main', html);
     document.getElementById('register').addEventListener('click', register);
+    document.getElementById('loginPage').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginView();
+    });
 }
 
 function register() {
@@ -451,17 +461,19 @@ function loginView(note) {
     showUserName();
     note = note ? note : '';
     const html = `
-    <div>
-    <h2>Login</h2>
-    <p>${note}</p>
-        <label>User Name: <input id='userName'></label>
-        <label>Password: <input id='password' type='password'></label>
-        <button id='login'>Login</button>
-        <p><u>Not yet a member? <a id='register' href='register'>Register Here!</u></a>
-    </div>
-    `;
+
+    <div class="form-signin">
+        <h1 class="h3 mb-3 font-weight-normal text-center"><b>Please Login</b></h1>
+        <b><p>${note}</p></b>
+        <label for="userName" class="sr-only">User Name</label>
+        <input type="text" id='userName' class="form-control" placeholder="User Name" required="" autofocus="">
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Password" required="">
+        <button class="btn btn-lg btn-primary btn-block" id='login' type="submit">Login</button></br>
+        <p class='text-center'><b><u>Not yet a member? <a id='registerPage' href='register'>Register Here!</u></b></a>
+  </div>`;
     printToHtml('main', html);
-    document.getElementById('register').addEventListener('click', (e) => {
+    document.getElementById('registerPage').addEventListener('click', (e) => {
         e.preventDefault();
         registerView();
     });

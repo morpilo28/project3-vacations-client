@@ -1,4 +1,4 @@
-* {
+ * {
     box-sizing: border-box;
 }
 
@@ -107,4 +107,27 @@ td {
 
 #addedImage{
 width: 100%;
+}
+
+
+body {
+    background-image: url('./images/ireland/13.jpg');
+    background-repeat: no-repeat;
+    width: 100%;
+    background-size: cover;
+}
+
+.form-signin {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+.text-center {
+    text-align: center;
+}
+
+#userNameForTitle{
+    font-weight: bold;
 }
