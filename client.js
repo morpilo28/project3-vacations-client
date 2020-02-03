@@ -36,25 +36,32 @@ function init() {
         loginView();
     } else {
         if (window.localStorage.getItem('isAdmin') === 'true') {
-            addChartNavigationLink();
+            addChartNavLink();
         }
-        showVacationList();
+        addLogoutNavLink();
+        navigate('vacations');
     }
 }
 
 function navbarEventListeners() {
-    const links = document.querySelectorAll('#nav a[data-href]');
-    for (let i = 0; i < links.length; i++) {
-        links[i].addEventListener('click', (e) => {
-            e.preventDefault();
-            navigate(e.target.dataset.href);
-        })
-    }
+    /*   const links = document.querySelectorAll('#nav a[data-href]');
+      for (let i = 0; i < links.length; i++) {
+          links[i].addEventListener('click', (e) => {
+              e.preventDefault();
+              navigate(e.target.dataset.href);
+          })
+      } */
 
     $(document).on('click', '#chart', (e) => {
         e.preventDefault();
         buildChart();
     });
+
+    $(document).on('click', '#logout', (e) => {
+        e.preventDefault();
+        navigate('logout');
+    });
+
 
 }
 
@@ -71,7 +78,10 @@ function navigate(url) {
             $('#chart').remove();
             window.localStorage.clear();
             navigate('login');
+            $('#logout').remove();
             break;
+        case 'register':
+            registerView();
     }
 }
 
@@ -414,7 +424,7 @@ function registerView(note) {
     document.getElementById('register').addEventListener('click', register);
     document.getElementById('loginPage').addEventListener('click', (e) => {
         e.preventDefault();
-        loginView();
+        navigate('login');
     });
 }
 
@@ -461,7 +471,7 @@ function loginView(note) {
     printToHtml('main', html);
     document.getElementById('registerPage').addEventListener('click', (e) => {
         e.preventDefault();
-        registerView();
+        navigate('register');
     });
     document.getElementById('login').addEventListener('click', loginValidation);
 }
@@ -488,8 +498,9 @@ function loginValidation() {
         window.localStorage.setItem('userId', res.userId);
         window.localStorage.setItem('isAdmin', res.isAdmin);
         if (res.isAdmin === 'true') {
-            addChartNavigationLink();
+            addChartNavLink();
         }
+        addLogoutNavLink();
         navigate('vacations');
     }).catch(status => {
         console.log(status);
@@ -501,8 +512,12 @@ function loginValidation() {
     })
 }
 
-function addChartNavigationLink() {
-    $('#nav').append(` <a id='chart' data-href="chart" href=""> | Chart</a>`);
+function addLogoutNavLink() {
+    $('#nav').append(`<a id='logout' data-href='logout' href='logout'> Logout </a>`);
+}
+
+function addChartNavLink() {
+    $('#nav').append(`<a id='chart' data-href="chart" href="">Chart</a>`);
 }
 
 function emptyInputs(id) {
@@ -681,7 +696,7 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
     let fullFromDateStr = formatDate(objToEdit.fromDate);
     let fullToDateStr = formatDate(objToEdit.toDate);
     const minDate = getTodayDateStr();
-    
+
     modalBody += `
         <label>Image: <br/>
             <input id='editImage' required type='file' value='${objToEdit.image}'>
