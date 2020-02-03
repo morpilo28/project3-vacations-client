@@ -1,5 +1,4 @@
 "use strict";
-//TODO: when displaying cards, show img from server images folder - fix src url;
 //TODO: when uploading img check if exist. if so don't add again (probably will need to change uploaded file saved name);
 //TODO: check if dates is ok and no problems;
 //TODO: is there any place to use /vacation/:id?!;
@@ -274,55 +273,42 @@ function isValueEmpty(vacationToAdd) {
 
 function onSaveAddedVacation() {
     const imageFile = (document.getElementById('addedImage')).files[0];
-    if(imageFile){
+    if (imageFile) {
         const formData = createFormData(imageFile);
-        //TODO: change original file by adding a time stamp and then send it to DB and multer
-        //const imgNameForDb = addTimeStampToImgName(imageFile);
-    
-        const vacationToAdd = {
+        let vacationToAdd = {
             destination: document.getElementById(`addedDestination`).value,
             description: (document.getElementById(`addedDescription`).value).toLowerCase(),
-            image: imageFile.name, //TODO: needs to save the same name as the image file saved on server
             fromDate: document.getElementById(`addedFromDate`).value,
             toDate: document.getElementById(`addedToDate`).value,
             price: document.getElementById(`addedPrice`).value,
             followers: 0
         };
         let isEmpty = isValueEmpty(vacationToAdd);
-    
+
         if (isEmpty === true) {
             printToHtml('modalHeader', "Can't save before filling out all the fields!");
         } else {
             let isDateValidBoolean = isDateValid(vacationToAdd);
             if (isDateValidBoolean) {
-                httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then().catch(status => console.log(status));
-                httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(createdVacation => {
-                    closeModal();
-                }).catch(status => {
-                    if (status === 500) {
-                        printToHtml('main', 'Internal Server Error')
-                    } else if (status === 400) {
-                        printToHtml('modalHeader', 'The added vacation already exist.')
-                    } else {
-                        console.log(status);
-                    }
-                });
+                httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
+                    vacationToAdd.image = imgFileName;
+                    httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(createdVacation => {
+                        closeModal();
+                    }).catch(status => {
+                        if (status === 500) {
+                            printToHtml('main', 'Internal Server Error')
+                        } else if (status === 400) {
+                            printToHtml('modalHeader', 'The added vacation already exist.')
+                        } else {
+                            console.log(status);
+                        }
+                    });
+                }).catch(status => console.log(status));
             }
         }
-    }else{
+    } else {
         printToHtml('modalHeader', "Please choose a picture!");
     }
-    
-    
-}
-
-function addTimeStampToImgName(imageFile) {
-    const imgFileNameWithExtension = imageFile.name;
-    //TODO: try catch - if file name consist of dots (beyond the extension dot).
-    const imgNameWithoutExtension = imgFileNameWithExtension.substr(0, imgFileNameWithExtension.lastIndexOf('.'));
-    const imgExtension = imgFileNameWithExtension.split('.').pop();
-
-    return imgNameWithoutExtension + '-' + Date.now() + '.' + imgExtension;
 }
 
 function onEditVacation(idx, singleVacationEndPoint, followers) {
@@ -331,14 +317,11 @@ function onEditVacation(idx, singleVacationEndPoint, followers) {
         const imageFile = (document.getElementById(`editImage`)).files[0];
         if (imageFile) {
             const formData = createFormData(imageFile);
-            //TODO: change original file by adding a time stamp and then send it to DB and multer
-            //const imgNameForDb = addTimeStampToImgName(imageFile);
 
             let editedObj = {
                 id: idx,
                 destination: jQuery(`#editDestination`).val(),
                 description: jQuery(`#editDescription`).val().toLowerCase(),
-                image: imageFile.name, //TODO: needs to save the same name as the image file saved on server
                 fromDate: jQuery(`#editFromDate`).val(),
                 toDate: jQuery(`#editToDate`).val(),
                 price: Number(jQuery(`#editPrice`).val()),
@@ -352,17 +335,18 @@ function onEditVacation(idx, singleVacationEndPoint, followers) {
             } else {
                 let isDateValidBoolean = isDateValid(editedObj);
                 if (isDateValidBoolean) {
-                    httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then().catch(status => console.log(status));
-                    httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
-                        closeModal();
-                        // vacationListView(res);
-                    }).catch(status => {
-                        if (status === 500) {
-
-                        } else {
-                            console.log(status);
-                        }
-                    });
+                    httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
+                        editedObj.image = imgFileName;
+                        httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
+                            closeModal();
+                        }).catch(status => {
+                            if (status === 500) {
+                                console.log(status);
+                            } else {
+                                console.log(status);
+                            }
+                        });
+                    }).catch(status => console.log(status));
                 }
             }
         } else {
@@ -371,10 +355,10 @@ function onEditVacation(idx, singleVacationEndPoint, followers) {
     });
 }
 
-function createFormData(imageFile){
+function createFormData(imageFile) {
     const formData = new FormData();
     formData.append('imgFile', imageFile);
-    
+
     return formData;
 }
 
@@ -664,7 +648,7 @@ function paintModalElement(saveId, objToUpdate) {
 }
 
 function modalBodyForAdd(modalBody) {
-    const minDate =  getTodayDateStr();
+    const minDate = getTodayDateStr();
 
     modalBody += `
             <label>Image: <br/>
@@ -676,7 +660,6 @@ function modalBodyForAdd(modalBody) {
             <label>To: <input id='addedToDate' required type='date' min='${minDate}'></label><br>
             <label>Price: <input id='addedPrice' required type='number' min='0'></label><br>`;
     return modalBody;
-    /* <label>Image: <input id='addedImage' required type='text'></label><br> */
 }
 
 function getTodayDateStr() {
@@ -690,14 +673,14 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
         destination: $(`#destination${objToUpdateId}`).text(),
         description: $(`#description${objToUpdateId}`).text(),
         price: $(`#price${objToUpdateId}`).text().slice(0, -1),
-        image: $(`#img${objToUpdateId}`).attr('alt'),
+        image: $(`#img${objToUpdateId}`).attr('alt'), // find a way set image input value to old img to update,
         fromDate: $(`#fromDate${objToUpdateId}`).text(),
         toDate: $(`#toDate${objToUpdateId}`).text(),
     };
 
     let fullFromDateStr = formatDate(objToEdit.fromDate);
     let fullToDateStr = formatDate(objToEdit.toDate);
-    const minDate =  getTodayDateStr();
+    const minDate = getTodayDateStr();
     
     modalBody += `
         <label>Image: <br/>
@@ -714,7 +697,7 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
 
 function formatDate(dateToFormat) {
     let [day, month, year] = dateToFormat.split('-');
-    const fullDateStr = year +'-'+ month +'-'+ day;
+    const fullDateStr = year + '-' + month + '-' + day;
     return fullDateStr;
 }
 
@@ -747,8 +730,6 @@ function addVacationToView(vacation) {
 }
 
 function createAdminCard(vacation) {
-    console.log(app.serverImgBaseUrl + vacation.image);
-    //TODO: make img src attr go to server images folder - maybe: "${app.serverImgBaseUrl + vacation.image}"
     return `<div id="${vacation.id}" class='card'>
                  <i id='deleteIcon${vacation.id}' class='fas fa-times deleteIcon'></i>
                  <i id='editIcon${vacation.id}' class="fas fa-pencil-alt editIcon"></i>
@@ -781,7 +762,6 @@ function createClientCard(vacation, isFollowed) {
                     <button id='followBtn${vacation.id}' class="btnFollowPosition btn btn-success btn-circle btn-circle-sm m-1 ${isFollowed}">f</button>
                     <button id="followersBtn${vacation.id}" class="btnFollowersPosition btn btn-success  btn-circle-sm m-1">${vacation.followers}</button>
                 </div>`;
-                //./styles/images/${vacation.image}
 }
 
 function onEditVacationEvent(newEditedVacationValues) {

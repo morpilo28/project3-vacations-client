@@ -131,3 +131,7 @@ body {
 #userNameForTitle{
     font-weight: bold;
 }
+
+#editImage{
+    width: 100%;
+}
