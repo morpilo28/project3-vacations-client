@@ -11,7 +11,7 @@
 
 const app = {
     baseEndPoint: `http://localhost:3201/`,
-    serverImgBaseUrl: 'http://localhost:3201/static/',
+    serverImgBaseUrl: 'http://localhost:3201/images/',
     END_POINTS: {
         vacations: 'vacations',
         login: 'login',
@@ -276,12 +276,13 @@ function onSaveAddedVacation() {
     const imageFile = (document.getElementById('addedImage')).files[0];
     if(imageFile){
         const formData = createFormData(imageFile);
-        const imgNameForDb = addTimeStampToImgName(imageFile);
+        //TODO: change original file by adding a time stamp and then send it to DB and multer
+        //const imgNameForDb = addTimeStampToImgName(imageFile);
     
         const vacationToAdd = {
             destination: document.getElementById(`addedDestination`).value,
             description: (document.getElementById(`addedDescription`).value).toLowerCase(),
-            image: imgNameForDb,
+            image: imageFile.name, //TODO: needs to save the same name as the image file saved on server
             fromDate: document.getElementById(`addedFromDate`).value,
             toDate: document.getElementById(`addedToDate`).value,
             price: document.getElementById(`addedPrice`).value,
@@ -330,13 +331,14 @@ function onEditVacation(idx, singleVacationEndPoint, followers) {
         const imageFile = (document.getElementById(`editImage`)).files[0];
         if (imageFile) {
             const formData = createFormData(imageFile);
-            const imgNameForDb = addTimeStampToImgName(imageFile);
+            //TODO: change original file by adding a time stamp and then send it to DB and multer
+            //const imgNameForDb = addTimeStampToImgName(imageFile);
 
             let editedObj = {
                 id: idx,
                 destination: jQuery(`#editDestination`).val(),
                 description: jQuery(`#editDescription`).val().toLowerCase(),
-                image: imgNameForDb,
+                image: imageFile.name, //TODO: needs to save the same name as the image file saved on server
                 fromDate: jQuery(`#editFromDate`).val(),
                 toDate: jQuery(`#editToDate`).val(),
                 price: Number(jQuery(`#editPrice`).val()),
@@ -745,6 +747,7 @@ function addVacationToView(vacation) {
 }
 
 function createAdminCard(vacation) {
+    console.log(app.serverImgBaseUrl + vacation.image);
     //TODO: make img src attr go to server images folder - maybe: "${app.serverImgBaseUrl + vacation.image}"
     return `<div id="${vacation.id}" class='card'>
                  <i id='deleteIcon${vacation.id}' class='fas fa-times deleteIcon'></i>
