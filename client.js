@@ -36,9 +36,9 @@ function init() {
         loginView();
     } else {
         if (window.localStorage.getItem('isAdmin') === 'true') {
-            addChartNavLink();
+            addNavigationLink('nav', 'chart', 'Chart');
         }
-        addLogoutNavLink();
+        addNavigationLink('nav', 'logout', 'Logout');
         navigate('vacations');
     }
 }
@@ -62,6 +62,10 @@ function navbarEventListeners() {
         navigate('logout');
     });
 
+    $(document).on('click', '#vacations', (e) => {
+        e.preventDefault();
+        navigate('vacations');
+    });
 
 }
 
@@ -86,7 +90,11 @@ function navigate(url) {
 }
 
 function buildChart() {
+    removeLink('chart');
+    removeLink('vacations');
+    addNavigationLink('nav','vacations', 'Vacation List');
     const userId = getUserId();
+    
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId + '&forChart=true', app.METHODS.GET).then(res => {
         let numOfFollowers = [];
         let vacationsFollowed = [];
@@ -498,9 +506,9 @@ function loginValidation() {
         window.localStorage.setItem('userId', res.userId);
         window.localStorage.setItem('isAdmin', res.isAdmin);
         if (res.isAdmin === 'true') {
-            addChartNavLink();
+            addNavigationLink('nav', 'chart', 'Chart');
         }
-        addLogoutNavLink();
+        addNavigationLink('nav', 'logout', 'Logout');
         navigate('vacations');
     }).catch(status => {
         console.log(status);
@@ -512,12 +520,8 @@ function loginValidation() {
     })
 }
 
-function addLogoutNavLink() {
-    $('#nav').append(`<a id='logout' data-href='logout' href='logout'> Logout </a>`);
-}
-
-function addChartNavLink() {
-    $('#nav').append(`<a id='chart' data-href="chart" href="">Chart</a>`);
+function addNavigationLink(parentElementId,elementId, linkName){
+    $(`#${parentElementId}`).append(`<a id=${elementId} href="">${linkName}</a>`);
 }
 
 function emptyInputs(id) {
@@ -595,8 +599,14 @@ function updateFollowersCount(vacationId, reduceOrAdd) {
         console.log(status);
     });
 }
+function removeLink(elementToRemoveId){
+    $(`#${elementToRemoveId}`).remove();
+}
 
 function adminView(vacationsArray) {
+    removeLink('chart');
+    removeLink('vacations');
+    addNavigationLink('nav', 'chart', 'Chart');
     const vacations = vacationsArray.organizedVacationArray ? vacationsArray.organizedVacationArray : vacationsArray;
     let html = `
     <h3 id='vacationListNote'> </h3>
