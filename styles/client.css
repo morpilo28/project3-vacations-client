@@ -17,10 +17,10 @@
  }
 
  .card {
-     float: left;
-     width: 19%;
-     height: 200px;
-     margin: 5px;
+    float: left;
+    width: 19%;
+    height: 300px;
+    margin: 5px;
  }
 
  #main {
@@ -29,9 +29,10 @@
  }
 
  .cardTextArea {
-     border: none;
-     width: 85%;
-     overflow: auto;
+    border: none;
+    width: 100%;
+    overflow: auto;
+    height: 50px;
  }
 
  #addedImage {
