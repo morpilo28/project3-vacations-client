@@ -1,158 +1,128 @@
  * {
-    box-sizing: border-box;
-}
+     box-sizing: border-box;
+ }
 
-.myTable {
-    table-layout: fixed;
-    width: 100%;
-}
+ input {
+     text-align: center;
+     width: 150px;
+ }
 
-.addRow {
-    display: none;
-}
+ a.disable {
+     pointer-events: none;
+     cursor: default;
+ }
 
-input {
-    text-align: center;
-    width: 150px;
-}
+ #add {
+     margin-bottom: 30px;
+ }
 
-thead,
-td {
-    text-align: center;
-}
+ .card {
+     float: left;
+     width: 19%;
+     height: 200px;
+     margin: 5px;
+ }
 
-a.disable {
-    pointer-events: none;
-    cursor: default;
-}
+ #main {
+     width: 100%;
+     height: 1000px;
+ }
 
-td {
-    padding: 5px 0 5px 0;
-}
+ .cardTextArea {
+     border: none;
+     width: 85%;
+     overflow: auto;
+ }
 
-#add {
-    margin-bottom: 30px;
-}
+ #addedImage {
+     width: 100%;
+ }
 
-.card {
-    float: left;
-    width: 19%;
-    height:200px;
-    margin: 5px;
-}
 
-#main {
-    width: 100%;
-    height: 1000px;
-}
+ body {
+     background-image: url('./images/ireland/13.jpg');
+     background-repeat: no-repeat;
+     width: 100%;
+     background-size: cover;
+ }
 
-.btn-success {
+ .form-signin {
+     width: 100%;
+     max-width: 330px;
+     padding: 15px;
+     margin: 0 auto;
+ }
+
+ .text-center {
+     text-align: center;
+ }
+
+ #userNameForTitle {
+     font-weight: bold;
+ }
+
+ #editImage {
+     width: 100%;
+ }
+
+ a {
+     color: black;
+     font-weight: bold;
+     /* border: 1px solid black; */
+     background-color: thistle;
+     padding: 4px;
+     margin-right: 10px;
+ }
+
+ a:hover {
+     color: white;
+     font-weight: bold;
+ }
+
+ .btn-circle {
+     width: 30px;
+     height: 30px;
+     border-radius: 15px;
+     text-align: center;
+     font-size: 100%;
+     line-height: 1.42857;
+     font-weight: bold;
+     padding: 0px;
+ }
+
+ .btnFollowPosition,
+ .btnFollowersPosition,
+ .btnDelete,
+ .btnEdit{
+     position: absolute;
+     right: 0;
+ }
+
+ .btnFollowersPosition {
+     bottom: 1px;
+ }
+
+ .followBtnColor {
+     color: black;
+     background-color: yellow;
+     border-color: #28a745;
+ }
+
+ .disabled {
+     pointer-events: none;
+ }
+ 
+ .btnDelete,
+ .btnEdit, .unFollowBtnColor {
     color: black;
-    background-color: #fff;
-    width: 36px;
-}
-
-.btn {
-    font-weight: bold;
-    transition: none;
-    line-height: 1.2;
-    border-radius: 1.25rem;
-    padding: 0.5rem .8rem;
-}
-
-.btnFollowPosition,.btnFollowersPosition{
-    position: absolute;
-    right: 0;
-}
-
-.btnFollowPosition{
-    top: 1px;
-}
-
-.btnFollowersPosition{
-    bottom: 1px;
-}
-
-.btn:hover,
-.button:active {
-    color: black;
-    background-color: yellow;
-}
-
-.followBtnColor {
-    background-color: yellow;
-}
-
-.unFollowBtnColor {
     background-color: white;
-}
+    border-color: #28a745;
+ }
 
-.deleteIcon{
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
+ .btnDelete,.btnFollowPosition {
+     top: 1px;
+ }
 
-.editIcon{
-    position: absolute;
-    top: 27px;
-    right: 5px;
-}
-
-.cardTextArea{
-    border: none;
-    width: 85%;
-    overflow:auto;
-}
-
-#addedImage{
-width: 100%;
-}
-
-
-body {
-    background-image: url('./images/ireland/13.jpg');
-    background-repeat: no-repeat;
-    width: 100%;
-    background-size: cover;
-}
-
-.form-signin {
-    width: 100%;
-    max-width: 330px;
-    padding: 15px;
-    margin: 0 auto;
-}
-
-.text-center {
-    text-align: center;
-}
-
-#userNameForTitle{
-    font-weight: bold;
-}
-
-#editImage{
-    width: 100%;
-}
-
-a{
-    color: black;
-    font-weight: bold;
-    /* border: 1px solid black; */
-    background-color: thistle;
-    padding: 4px;
-    margin-right: 10px;
-}
-
-a:hover{
-    color: white;
-    font-weight: bold;
-}
-/* 
-
-a:link - a normal, unvisited link
-a:visited - a link the user has visited
-a:hover - a link when the user mouses over it
-a:active - a link the moment it is clicked
-*/
+ .btnEdit {
+     top: 35px;
+ }

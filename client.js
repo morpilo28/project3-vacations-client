@@ -763,20 +763,20 @@ function addVacationToView(vacation) {
 
 function createAdminCard(vacation) {
     return `<div id="${vacation.id}" class='card'>
-                 <i id='deleteIcon${vacation.id}' class='fas fa-times deleteIcon'></i>
-                 <i id='editIcon${vacation.id}' class="fas fa-pencil-alt editIcon"></i>
-                 <input hidden value='${vacation.id}'/>
-                 <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
-                 <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
-                 <div id="price${vacation.id}">${vacation.price}$</div>
-                 <div>
-                     <img id="img${vacation.id}" width='80' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
-                 </div>
-                 <div>
-                    <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
-                     <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
-                 </div>
-                 <input hidden id="adminFollowersBtn${vacation.id}" value='${vacation.followers}' />
+                <button type="button" id='deleteIcon${vacation.id}' class="btn btnDelete btn-primary btn-circle "><i class='fas fa-times'></i></button>
+                <button type="button" id='editIcon${vacation.id}' class="btn btnEdit btn-primary btn-circle"><i class="fas fa-pencil-alt"></i></button> 
+                <input hidden value='${vacation.id}'/>
+                <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
+                <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
+                <div id="price${vacation.id}">${vacation.price}$</div>
+                <div>
+                    <img id="img${vacation.id}" width='100' height='60' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
+                </div>
+                <div>
+                   <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
+                    <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
+                </div>
+                <input hidden id="adminFollowersBtn${vacation.id}" value='${vacation.followers}' />
              </div>`;
 }
 
@@ -786,14 +786,14 @@ function createClientCard(vacation, isFollowed) {
                     <div id="description${vacation.id}">${vacation.description}</div>
                     <div id="price${vacation.id}">${vacation.price}$</div>
                     <div>
-                        <img id="img${vacation.id}" width='80' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
+                        <img id="img${vacation.id}" width='100' height='60' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
                     </div>
                     <div>
                         <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
                         <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
                     </div>
-                    <button id='followBtn${vacation.id}' class="btnFollowPosition btn btn-success btn-circle btn-circle-sm m-1 ${isFollowed}">f</button>
-                    <button id="clientFollowersBtn${vacation.id}" class="btnFollowersPosition btn btn-success  btn-circle-sm m-1">${vacation.followers}</button>
+                    <button type="button" id='followBtn${vacation.id}' class="btn btnFollowPosition btn-primary btn-circle ${isFollowed} ">f</button>
+                    <button id="clientFollowersBtn${vacation.id}" class="btnFollowersPosition btn btn-info btn-circle disabled unFollowBtnColor">${vacation.followers}</button>
                 </div>`;
 }
 
