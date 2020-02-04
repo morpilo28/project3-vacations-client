@@ -92,9 +92,9 @@ function navigate(url) {
 function buildChart() {
     removeLink('chart');
     removeLink('vacations');
-    addNavigationLink('nav','vacations', 'Vacation List');
+    addNavigationLink('nav', 'vacations', 'Vacation List');
     const userId = getUserId();
-    
+
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId + '&forChart=true', app.METHODS.GET).then(res => {
         let numOfFollowers = [];
         let vacationsFollowed = [];
@@ -261,14 +261,17 @@ function addBtnEventListeners(vacationsArray) {
     }
 }
 
-function isDateValid(vacationToAdd) {
+function isDateValid(vacationToAdd, isOnEdit) {
     let today = new Date().setHours(0, 0, 0, 0);
     let fromDate = new Date(vacationToAdd.fromDate).setHours(0, 0, 0, 0);
     let toDate = new Date(vacationToAdd.toDate).setHours(0, 0, 0, 0);
-    if (fromDate < today) {
-        printToHtml('modalHeader', '"From" date must be in the future');
-        return false;
-    } else if (toDate < today) {
+    if (!isOnEdit) {
+        if (fromDate < today) {
+            printToHtml('modalHeader', '"From" date must be in the future');
+            return false;
+        }
+    }
+    if (toDate < today) {
         printToHtml('modalHeader', '"To" date must be in the future');
         return false;
     } else if (toDate < fromDate) {
@@ -306,7 +309,7 @@ function onSaveAddedVacation() {
         if (isEmpty === true) {
             printToHtml('modalHeader', "Can't save before filling out all the fields!");
         } else {
-            let isDateValidBoolean = isDateValid(vacationToAdd);
+            let isDateValidBoolean = isDateValid(vacationToAdd, false);
             if (isDateValidBoolean) {
                 httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                     vacationToAdd.image = imgFileName;
@@ -351,7 +354,7 @@ function onEditVacation(idx, singleVacationEndPoint, followers) {
             if (isEmpty === true) {
                 printToHtml('modalHeader', "Can't save before filling out all the fields!");
             } else {
-                let isDateValidBoolean = isDateValid(editedObj);
+                let isDateValidBoolean = isDateValid(editedObj, true);
                 if (isDateValidBoolean) {
                     httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                         editedObj.image = imgFileName;
@@ -520,7 +523,7 @@ function loginValidation() {
     })
 }
 
-function addNavigationLink(parentElementId,elementId, linkName){
+function addNavigationLink(parentElementId, elementId, linkName) {
     $(`#${parentElementId}`).append(`<a id=${elementId} href="">${linkName}</a>`);
 }
 
@@ -599,7 +602,7 @@ function updateFollowersCount(vacationId, reduceOrAdd) {
         console.log(status);
     });
 }
-function removeLink(elementToRemoveId){
+function removeLink(elementToRemoveId) {
     $(`#${elementToRemoveId}`).remove();
 }
 
