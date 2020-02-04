@@ -597,7 +597,9 @@ function updateFollowersCount(vacationId, reduceOrAdd) {
         id: vacationId,
         reduceOrAdd: reduceOrAdd
     };
-    httpRequests(app.END_POINTS.vacations + '/' + vacationId, app.METHODS.PUT, reqBody).then().catch(status => {
+    httpRequests(app.END_POINTS.vacations + '/' + vacationId, app.METHODS.PUT, reqBody).then(res=>{
+        navigate('vacations');
+    }).catch(status => {
         console.log(status);
     });
 }
