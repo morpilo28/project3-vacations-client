@@ -237,13 +237,12 @@ function deleteBtnEventListener(id, singleVacationEndPoint) {
     });
 }
 
-function editBtnEventListener(vacationId, obj, singleVacationEndPoint) {
+function editBtnEventListener(vacationId, singleVacationEndPoint) {
     $(`#editIcon${vacationId}`).on('click', (e) => {
         e.preventDefault();
-        const id = e.target.id.slice(8);
-        const objToUpdate = obj;
-        paintModalElement(`saveChanges${id}`, objToUpdate);
-        onEditVacation(id, singleVacationEndPoint, objToUpdate.followers);
+        const objToUpdateId = e.target.id.slice(8);
+        paintModalElement(`saveChanges${objToUpdateId}`, objToUpdateId);
+        onEditVacation(objToUpdateId, singleVacationEndPoint);
     });
 }
 
@@ -256,7 +255,7 @@ function addBtnEventListeners(vacationsArray) {
     for (let i = 0; i < vacationsArray.length; i++) {
         const id = vacationsArray[i].id;
         const singleVacationEndPoint = `vacations/${id}`;
-        editBtnEventListener(id, vacationsArray[i], singleVacationEndPoint);
+        editBtnEventListener(id, singleVacationEndPoint);
         deleteBtnEventListener(id, singleVacationEndPoint);
     }
 }
@@ -332,7 +331,7 @@ function onSaveAddedVacation() {
     }
 }
 
-function onEditVacation(idx, singleVacationEndPoint, followers) {
+function onEditVacation(idx, singleVacationEndPoint) {
     $(`#saveChanges${idx}`).on('click', (e) => {
         e.preventDefault();
         const imageFile = (document.getElementById(`editImage`)).files[0];
@@ -346,7 +345,7 @@ function onEditVacation(idx, singleVacationEndPoint, followers) {
                 fromDate: jQuery(`#editFromDate`).val(),
                 toDate: jQuery(`#editToDate`).val(),
                 price: Number(jQuery(`#editPrice`).val()),
-                followers: followers,
+                followers: Number(jQuery(`#editFollowers`).val()),
                 userId: getUserId()
             };
 
@@ -602,6 +601,7 @@ function updateFollowersCount(vacationId, reduceOrAdd) {
         console.log(status);
     });
 }
+
 function removeLink(elementToRemoveId) {
     $(`#${elementToRemoveId}`).remove();
 }
@@ -630,10 +630,10 @@ function adminView(vacationsArray) {
     }
 }
 
-function paintModalElement(saveId, objToUpdate) {
+function paintModalElement(saveId, objToUpdateId) {
     let modalBody = `<div class="modal-body">`;
-    if (objToUpdate) {
-        modalBody = modalBodyForUpdate(modalBody, objToUpdate.id, saveId);
+    if (objToUpdateId) {
+        modalBody = modalBodyForUpdate(modalBody, objToUpdateId, saveId);
     } else {
         modalBody = modalBodyForAdd(modalBody);
     }
@@ -704,6 +704,7 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
         image: $(`#img${objToUpdateId}`).attr('alt'), // find a way set image input value to old img to update,
         fromDate: $(`#fromDate${objToUpdateId}`).text(),
         toDate: $(`#toDate${objToUpdateId}`).text(),
+        followers: $(`#adminFollowersBtn${objToUpdateId}`).attr('value')
     };
 
     let fullFromDateStr = formatDate(objToEdit.fromDate);
@@ -719,6 +720,7 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
         <label>From: <input id='editFromDate' required type='date' min='${minDate}' value='${fullFromDateStr}'></label><br>
         <label>To: <input id='editToDate' required type='date' min='${minDate}' value='${fullToDateStr}'></label><br>
         <label>Price: <input id='editPrice' required type='number' min='0' value='${objToEdit.price}'></label><br>
+        <input hidden id='editFollowers' value='${objToEdit.followers}'/>
         `;
     return modalBody;
 }
@@ -749,7 +751,7 @@ function addVacationToView(vacation) {
         let html = createAdminCard(vacation);
         $('#vacationList').append(html);
         deleteBtnEventListener(vacation.id, singleEndPoint);
-        editBtnEventListener(vacation.id, vacation, singleEndPoint);
+        editBtnEventListener(vacation.id, singleEndPoint);
     } else if (window.localStorage.getItem('isAdmin') === 'false') {
         let html = createClientCard(vacation, 'unFollowBtnColor');
         $('#vacationList').append(html);
@@ -772,6 +774,7 @@ function createAdminCard(vacation) {
                     <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
                      <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
                  </div>
+                 <input hidden id="adminFollowersBtn${vacation.id}" value='${vacation.followers}' />
              </div>`;
 }
 
@@ -788,7 +791,7 @@ function createClientCard(vacation, isFollowed) {
                         <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
                     </div>
                     <button id='followBtn${vacation.id}' class="btnFollowPosition btn btn-success btn-circle btn-circle-sm m-1 ${isFollowed}">f</button>
-                    <button id="followersBtn${vacation.id}" class="btnFollowersPosition btn btn-success  btn-circle-sm m-1">${vacation.followers}</button>
+                    <button id="clientFollowersBtn${vacation.id}" class="btnFollowersPosition btn btn-success  btn-circle-sm m-1">${vacation.followers}</button>
                 </div>`;
 }
 
@@ -800,7 +803,8 @@ function onEditVacationEvent(newEditedVacationValues) {
     $(`#img${newEditedVacationValues.id}`).attr("src", `${app.serverImgBaseUrl + newEditedVacationValues.image}`).attr("alt", newEditedVacationValues.image);
     $(`#fromDate${newEditedVacationValues.id}`).text(newEditedVacationValues.fromDate);
     $(`#toDate${newEditedVacationValues.id}`).text(newEditedVacationValues.toDate);
-    $(`#followersBtn${newEditedVacationValues.id}`).text(newEditedVacationValues.followers);
+    $(`#clientFollowersBtn${newEditedVacationValues.id}`).text(newEditedVacationValues.followers);
+    $(`#adminFollowersBtn${newEditedVacationValues.id}`).attr('value', newEditedVacationValues.followers);
 }
 
 function onDeleteVacationEvent(deletedVacationId) {
