@@ -90,12 +90,12 @@ function navigate(url) {
 }
 
 function buildChart() {
-    removeLink('chart');
-    removeLink('vacations');
-    addNavigationLink('nav', 'vacations', 'Vacation List');
     const userId = getUserId();
 
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId + '&forChart=true', app.METHODS.GET).then(res => {
+        removeLink('chart');
+        removeLink('vacations');
+        addNavigationLink('nav', 'vacations', 'Vacation List');
         let numOfFollowers = [];
         let vacationsFollowed = [];
         for (let i = 0; i < res.length; i++) {
@@ -105,7 +105,7 @@ function buildChart() {
         }
         // TODO: try to make the y labels be according to the followers value or make a min-max labels;
         // numOfFollowers = numOfFollowers.sort((a, b) => a - b).reverse(); 
-        let html = `<canvas id="myChart" style="display: block; height: 467px; width: 935px;"></canvas>`;
+        let html = `<canvas id="myChart" style="display: block; height: 467px; width: 100%;"></canvas>`;
         printToHtml('main', html);
         var ctx = document.getElementById('myChart').getContext('2d');
         var chart = new Chart(ctx, {
@@ -311,7 +311,7 @@ function onSaveAddedVacation() {
             if (isDateValidBoolean) {
                 httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                     vacationToAdd.image = imgFileName;
-                    httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(createdVacation => {
+                    httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
                         closeModal();
                     }).catch(status => {
                         if (status === 500) {
@@ -763,8 +763,8 @@ function addVacationToView(vacation) {
 function createAdminCard(vacation) {
     return `<div id="${vacation.id}" class='card'>
                 <img id="img${vacation.id}" width='100%' height='150' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
-                <button type="button" id='deleteIcon${vacation.id}' class="btn btnDelete btn-primary btn-circle "><i class='fas fa-times'></i></button>
-                <button type="button" id='editIcon${vacation.id}' class="btn btnEdit btn-primary btn-circle"><i class="fas fa-pencil-alt"></i></button> 
+                <button type="button" class="btn btnDelete btn-primary btn-circle "><i id='deleteIcon${vacation.id}' class='fas fa-times'></i></button>
+                <button type="button" class="btn btnEdit btn-primary btn-circle"><i id='editIcon${vacation.id}' class="fas fa-pencil-alt"></i></button> 
                 <input hidden value='${vacation.id}'/>
                 <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
                 <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
@@ -807,5 +807,6 @@ function onEditVacationEvent(newEditedVacationValues) {
 
 function onDeleteVacationEvent(deletedVacationId) {
     console.log('deleted');
+    console.log(deletedVacationId);
     $('#' + deletedVacationId.id).remove();
 }
