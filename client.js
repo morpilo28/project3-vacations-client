@@ -101,7 +101,7 @@ function buildChart() {
         for (let i = 0; i < res.length; i++) {
             let numOfFollowersToArray = Object.values(res[i]);
             numOfFollowers.push(numOfFollowersToArray[7]);
-            vacationsFollowed.push(numOfFollowersToArray[0] + '-' + numOfFollowersToArray[2]);
+            vacationsFollowed.push(numOfFollowersToArray[0] + ' (' + numOfFollowersToArray[2] + ')');
         }
         // TODO: try to make the y labels be according to the followers value or make a min-max labels;
         // numOfFollowers = numOfFollowers.sort((a, b) => a - b).reverse(); 
@@ -115,7 +115,7 @@ function buildChart() {
                 datasets: [{
                     label: 'Number of Followers',
                     backgroundColor: 'coral',
-                    data: numOfFollowers, // number of followers
+                    data: numOfFollowers, // number of followers,         
                 }]
             },
             options: {
@@ -131,6 +131,9 @@ function buildChart() {
                 },
             }
         });
+        Chart.defaults.global.defaultFontColor = 'white';
+        Chart.defaults.global.defaultFontStyle = 'bold';
+        Chart.defaults.global.defaultFontSize = '15';
     }).catch(status => {
         if (status === 500) {
             printToHtml('main', 'Internal Server Error');
