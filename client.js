@@ -79,10 +79,11 @@ function navigate(url) {
             showVacationList();
             break;
         case 'logout':
-            $('#chart').remove();
+            removeLink('chart');
+            removeLink('vacations');
             window.localStorage.clear();
             navigate('login');
-            $('#logout').remove();
+            removeLink('logout');
             break;
         case 'register':
             registerView();
@@ -96,44 +97,48 @@ function buildChart() {
         removeLink('chart');
         removeLink('vacations');
         addNavigationLink('nav', 'vacations', 'Vacation List');
-        let numOfFollowers = [];
-        let vacationsFollowed = [];
-        for (let i = 0; i < res.length; i++) {
-            let numOfFollowersToArray = Object.values(res[i]);
-            numOfFollowers.push(numOfFollowersToArray[7]);
-            vacationsFollowed.push(numOfFollowersToArray[0] + ' (' + numOfFollowersToArray[2] + ')');
-        }
-        // TODO: try to make the y labels be according to the followers value or make a min-max labels;
-        // numOfFollowers = numOfFollowers.sort((a, b) => a - b).reverse(); 
-        let html = `<canvas id="myChart" style="display: block; height: 467px; width: 100%;"></canvas>`;
-        printToHtml('main', html);
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: vacationsFollowed, //vacations followed Id's
-                datasets: [{
-                    label: 'Number of Followers',
-                    backgroundColor: 'coral',
-                    data: numOfFollowers, // number of followers,         
-                }]
-            },
-            options: {
-                scales: {
-                    xAxes: [{
-                        type: 'category',
-                        labels: vacationsFollowed,
-                    }],
-                    yAxes: [{
-                        type: 'category',
-                        labels: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], //needs to set is dynamically
+        if (res.length === 0) {
+            printToHtml('main', `<div><b>No vacation has been followed yet!</b></div>`);
+        } else {
+            let numOfFollowers = [];
+            let vacationsFollowed = [];
+            for (let i = 0; i < res.length; i++) {
+                let numOfFollowersToArray = Object.values(res[i]);
+                numOfFollowers.push(numOfFollowersToArray[7]);
+                vacationsFollowed.push(numOfFollowersToArray[0] + ' (' + numOfFollowersToArray[2] + ')');
+            }
+            // TODO: try to make the y labels be according to the followers value or make a min-max labels;
+            // numOfFollowers = numOfFollowers.sort((a, b) => a - b).reverse(); 
+            let html = `<canvas id="myChart" style="display: block; height: 467px; width: 100%;"></canvas>`;
+            printToHtml('main', html);
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: vacationsFollowed, //vacations followed Id's
+                    datasets: [{
+                        label: 'Number of Followers',
+                        backgroundColor: 'coral',
+                        data: numOfFollowers, // number of followers,         
                     }]
                 },
-            }
-        });
-        Chart.defaults.global.defaultFontColor = 'white';
-        Chart.defaults.global.defaultFontStyle = 'bold';
-        Chart.defaults.global.defaultFontSize = '15';
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'category',
+                            labels: vacationsFollowed,
+                        }],
+                        yAxes: [{
+                            type: 'category',
+                            labels: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], //needs to set is dynamically
+                        }]
+                    },
+                }
+            });
+            Chart.defaults.global.defaultFontColor = 'white';
+            Chart.defaults.global.defaultFontStyle = 'bold';
+            Chart.defaults.global.defaultFontSize = '15';
+        }
     }).catch(status => {
         if (status === 500) {
             printToHtml('main', 'Internal Server Error');
@@ -509,10 +514,10 @@ function loginValidation() {
         window.localStorage.setItem('userNameForTitle', res.userName);
         window.localStorage.setItem('userId', res.userId);
         window.localStorage.setItem('isAdmin', res.isAdmin);
+        addNavigationLink('nav', 'logout', 'Logout');
         if (res.isAdmin === 'true') {
             addNavigationLink('nav', 'chart', 'Chart');
         }
-        addNavigationLink('nav', 'logout', 'Logout');
         navigate('vacations');
     }).catch(status => {
         console.log(status);
@@ -737,7 +742,7 @@ function formatDate(dateToFormat) {
 
 function closeModal() {
     $('#myModal').modal('hide');
-    $('#modalElement').remove();
+    removeLink('modalElement');
 }
 
 function displayVacationModal() {
@@ -810,6 +815,5 @@ function onEditVacationEvent(newEditedVacationValues) {
 
 function onDeleteVacationEvent(deletedVacationId) {
     console.log('deleted');
-    console.log(deletedVacationId);
-    $('#' + deletedVacationId.id).remove();
+    removeLink(deletedVacationId.id);
 }
