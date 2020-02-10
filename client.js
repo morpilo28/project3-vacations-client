@@ -79,11 +79,11 @@ function navigate(url) {
             showVacationList();
             break;
         case 'logout':
-            removeLink('chart');
-            removeLink('vacations');
+            removeElement('chart');
+            removeElement('vacations');
             window.localStorage.clear();
             navigate('login');
-            removeLink('logout');
+            removeElement('logout');
             break;
         case 'register':
             registerView();
@@ -92,10 +92,10 @@ function navigate(url) {
 
 function buildChart() {
     const userId = getUserId();
-
+    
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId + '&forChart=true', app.METHODS.GET).then(res => {
-        removeLink('chart');
-        removeLink('vacations');
+        removeElement('chart');
+        removeElement('vacations');
         addNavigationLink('nav', 'vacations', 'Vacation List');
         if (res.length === 0) {
             printToHtml('main', `<div><b>No vacation has been followed yet!</b></div>`);
@@ -135,9 +135,8 @@ function buildChart() {
                     },
                 }
             });
-            Chart.defaults.global.defaultFontColor = 'white';
+             Chart.defaults.global.defaultFontColor = 'white';
             Chart.defaults.global.defaultFontStyle = 'bold';
-            Chart.defaults.global.defaultFontSize = '15';
         }
     }).catch(status => {
         if (status === 500) {
@@ -613,13 +612,13 @@ function updateFollowersCount(vacationId, reduceOrAdd) {
     });
 }
 
-function removeLink(elementToRemoveId) {
+function removeElement(elementToRemoveId) {
     $(`#${elementToRemoveId}`).remove();
 }
 
 function adminView(vacationsArray) {
-    removeLink('chart');
-    removeLink('vacations');
+    removeElement('chart');
+    removeElement('vacations');
     addNavigationLink('nav', 'chart', 'Chart');
     const vacations = vacationsArray.organizedVacationArray ? vacationsArray.organizedVacationArray : vacationsArray;
     let html = `
@@ -744,7 +743,7 @@ function formatDate(dateToFormat) {
 
 function closeModal() {
     $('#myModal').modal('hide');
-    removeLink('modalElement');
+    removeElement('modalElement');
 }
 
 function displayVacationModal() {
@@ -817,5 +816,5 @@ function onEditVacationEvent(newEditedVacationValues) {
 
 function onDeleteVacationEvent(deletedVacationId) {
     console.log('deleted');
-    removeLink(deletedVacationId.id);
+    removeElement(deletedVacationId.id);
 }
