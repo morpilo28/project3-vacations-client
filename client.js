@@ -92,7 +92,7 @@ function navigate(url) {
 
 function buildChart() {
     const userId = getUserId();
-    
+
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId + '&forChart=true', app.METHODS.GET).then(res => {
         removeElement('chart');
         removeElement('vacations');
@@ -111,6 +111,7 @@ function buildChart() {
             // numOfFollowers = numOfFollowers.sort((a, b) => a - b).reverse(); 
             let html = `<canvas id="myChart" style="display: block; height: 467px; width: 100%;"></canvas>`;
             printToHtml('main', html);
+            console.log(numOfFollowers);
             var ctx = document.getElementById('myChart').getContext('2d');
             var chart = new Chart(ctx, {
                 type: 'bar',
@@ -129,13 +130,18 @@ function buildChart() {
                             labels: vacationsFollowed,
                         }],
                         yAxes: [{
-                            type: 'category',
-                            labels: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], //needs to set is dynamically
+                            display: true,
+                            ticks: {
+                                beginAtZero: true,
+                                max: Math.max(...numOfFollowers),
+                                min:0,
+                                stepSize:1
+                            }
                         }]
                     },
                 }
             });
-             Chart.defaults.global.defaultFontColor = 'white';
+            Chart.defaults.global.defaultFontColor = 'white';
             Chart.defaults.global.defaultFontStyle = 'bold';
         }
     }).catch(status => {
@@ -288,7 +294,6 @@ function isDateValid(vacationToAdd, isOnEdit) {
 }
 
 function isValueEmpty(vacationToAdd) {
-    debugger
     let isEmpty = false;
     Object.values(vacationToAdd).forEach(value => {
         if (value === '') {
@@ -357,7 +362,6 @@ function onEditVacation(idx, singleVacationEndPoint) {
             };
 
             let isEmpty = isValueEmpty(editedObj);
-            debugger
             if (isEmpty === true) {
                 printToHtml('modalHeader', "Can't save before filling out all the fields!");
             } else {
@@ -436,7 +440,7 @@ function registerView(note) {
         <label for="password" class="sr-only">Password</label>
         <input type="password" id="password" class="form-control" placeholder="Password" required=""></br>
         <button class="btn btn-lg btn-primary btn-block" id='register' type="submit">Register</button></br>
-        <p class='text-center'><b><u>Already member? <a id='loginPage' href='login'>Login Here!</u></b></a>
+        <p class='text-center'><b><u>Already a member? <a id='loginPage' href='login'>Login Here!</u></b></a>
   </div>`;
     printToHtml('main', html);
     document.getElementById('register').addEventListener('click', register);
@@ -497,9 +501,10 @@ function loginView(note) {
 function showUserName() {
     const savedUserName = window.localStorage.getItem('userNameForTitle');
     if (!savedUserName) {
-        document.getElementById('userNameForTitle').innerHTML = `Hello Guest,`;
+        printToHtml('userNameForTitle', `Hello <u>Guest</u>,`)
     } else {
-        document.getElementById('userNameForTitle').innerHTML = `Hello ${(savedUserName).charAt(0).toUpperCase() + savedUserName.slice(1)},`;
+        let userName = savedUserName.charAt(0).toUpperCase() + savedUserName.slice(1);
+        printToHtml('userNameForTitle', `Hello <u>${userName}</u>,`)
     }
 }
 

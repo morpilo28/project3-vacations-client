@@ -13,7 +13,9 @@
  }
 
  #add {
-     margin-bottom: 30px;
+    margin-bottom: 30px;
+    margin-left: 10px;
+    width: 132px;
  }
 
  .card {
@@ -73,6 +75,11 @@
      background-color: thistle;
      padding: 4px;
      margin-right: 10px;
+     margin-left: 10px;
+ }
+
+ #registerPage, #loginPage{
+     margin-left: 0px;
  }
 
  a:hover {
@@ -128,4 +135,20 @@
 
  .btnEdit {
      top: 35px;
+ }
+
+ h1{
+    font-size: 50px;
+    text-align: center;
+    margin-top: 30px;
+ }
+
+ #userNameForTitle{
+     font-size: 20px;
+     font-weight: bold;
+     position: absolute;
+     left: 0;
+     top: 0;
+     margin-left: 20px;
+     margin-top: 15px;
  }
