@@ -289,6 +289,7 @@ function isDateValid(vacationToAdd, isOnEdit) {
 }
 
 function isValueEmpty(vacationToAdd) {
+    debugger
     let isEmpty = false;
     Object.values(vacationToAdd).forEach(value => {
         if (value === '') {
@@ -351,12 +352,13 @@ function onEditVacation(idx, singleVacationEndPoint) {
                 description: jQuery(`#editDescription`).val().toLowerCase(),
                 fromDate: jQuery(`#editFromDate`).val(),
                 toDate: jQuery(`#editToDate`).val(),
-                price: Number(jQuery(`#editPrice`).val()),
-                followers: Number(jQuery(`#editFollowers`).val()),
+                price: jQuery(`#editPrice`).val(),
+                followers: jQuery(`#editFollowers`).val(),
                 userId: getUserId()
             };
 
             let isEmpty = isValueEmpty(editedObj);
+            debugger
             if (isEmpty === true) {
                 printToHtml('modalHeader', "Can't save before filling out all the fields!");
             } else {
