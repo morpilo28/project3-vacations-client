@@ -43,15 +43,7 @@ function init() {
     }
 }
 
-function navbarEventListeners() {
-    /*   const links = document.querySelectorAll('#nav a[data-href]');
-      for (let i = 0; i < links.length; i++) {
-          links[i].addEventListener('click', (e) => {
-              e.preventDefault();
-              navigate(e.target.dataset.href);
-          })
-      } */
-
+function navbarEventListeners() { //TODO: change func name
     $(document).on('click', '#chart', (e) => {
         e.preventDefault();
         buildChart();
@@ -67,6 +59,15 @@ function navbarEventListeners() {
         navigate('vacations');
     });
 
+    $(document).on('click', "#imgPick", (e) => {
+        e.preventDefault();
+        $("#editImage").trigger('click');
+    })
+
+    $(document).on('change', "#editImage", (e) => {
+        e.preventDefault();
+        $("#imgPick").html('Image has been changed');
+    })
 }
 
 function navigate(url) {
@@ -134,8 +135,8 @@ function buildChart() {
                             ticks: {
                                 beginAtZero: true,
                                 max: Math.max(...numOfFollowers),
-                                min:0,
-                                stepSize:1
+                                min: 0,
+                                stepSize: 1
                             }
                         }]
                     },
@@ -346,43 +347,40 @@ function onSaveAddedVacation() {
 function onEditVacation(idx, singleVacationEndPoint) {
     $(`#saveChanges${idx}`).on('click', (e) => {
         e.preventDefault();
-        const imageFile = (document.getElementById(`editImage`)).files[0];
-        if (imageFile) {
-            const formData = createFormData(imageFile);
 
-            let editedObj = {
-                id: idx,
-                destination: jQuery(`#editDestination`).val(),
-                description: jQuery(`#editDescription`).val().toLowerCase(),
-                fromDate: jQuery(`#editFromDate`).val(),
-                toDate: jQuery(`#editToDate`).val(),
-                price: jQuery(`#editPrice`).val(),
-                followers: jQuery(`#editFollowers`).val(),
-                userId: getUserId()
-            };
+        let editedObj = {
+            id: idx,
+            destination: jQuery(`#editDestination`).val(),
+            description: jQuery(`#editDescription`).val().toLowerCase(),
+            fromDate: jQuery(`#editFromDate`).val(),
+            toDate: jQuery(`#editToDate`).val(),
+            price: jQuery(`#editPrice`).val(),
+            followers: jQuery(`#editFollowers`).val(),
+            userId: getUserId()
+        };
 
-            let isEmpty = isValueEmpty(editedObj);
-            if (isEmpty === true) {
-                printToHtml('modalHeader', "Can't save before filling out all the fields!");
-            } else {
-                let isDateValidBoolean = isDateValid(editedObj, true);
-                if (isDateValidBoolean) {
+        let isEmpty = isValueEmpty(editedObj);
+        if (isEmpty === true) {
+            printToHtml('modalHeader', "Can't save before filling out all the fields!");
+        } else {
+            let isDateValidBoolean = isDateValid(editedObj, true);
+            if (isDateValidBoolean) {
+                const imageFile = (document.getElementById(`editImage`)).files[0];
+                if (imageFile) {
+                    const formData = createFormData(imageFile);
                     httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                         editedObj.image = imgFileName;
                         httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
                             closeModal();
-                        }).catch(status => {
-                            if (status === 500) {
-                                console.log(status);
-                            } else {
-                                console.log(status);
-                            }
-                        });
+                        }).catch(status => console.log(status));
+                    }).catch(status => console.log(status));
+                } else {
+                    editedObj.image = jQuery(`#img${idx}`).attr('alt');
+                    httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
+                        closeModal();
                     }).catch(status => console.log(status));
                 }
             }
-        } else {
-            printToHtml('modalHeader', "Please choose a picture!");
         }
     });
 }
@@ -694,9 +692,9 @@ function modalBodyForAdd(modalBody) {
     const minDate = getTodayDateStr();
 
     modalBody += `
-            <label>Image: <br/>
-                <input id='addedImage' required type='file'><br/>
-            </label><br>
+            <label>Choose an Image: 
+                <input id='addedImage' required type='file'>
+            </label><br><br>
             <label>Destination: <input id='addedDestination' required type='text'></label><br>
             <label>Description: <textarea id='addedDescription' required type='text'></textarea></label><br>
             <label>From: <input id='addedFromDate' required type='date' min='${minDate}'></label><br>
@@ -716,7 +714,7 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
         destination: $(`#destination${objToUpdateId}`).text(),
         description: $(`#description${objToUpdateId}`).text(),
         price: $(`#price${objToUpdateId}`).text().slice(0, -1),
-        image: $(`#img${objToUpdateId}`).attr('alt'), // find a way set image input value to old img to update,
+        image: $(`#img${objToUpdateId}`).attr('alt'), // TODO: find a way set image input value to old img to update,
         fromDate: $(`#fromDate${objToUpdateId}`).text(),
         toDate: $(`#toDate${objToUpdateId}`).text(),
         followers: $(`#adminFollowersBtn${objToUpdateId}`).attr('value')
@@ -725,11 +723,14 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
     let fullFromDateStr = formatDate(objToEdit.fromDate);
     let fullToDateStr = formatDate(objToEdit.toDate);
     const minDate = getTodayDateStr();
+    //<input id='editImage' type='file' value='${objToEdit.image}' hidden></input>
+    /*  <button id="upfile1" style="cursor:pointer">Change Image
+                <input type="file" id='editImage' value='${objToEdit.image}' style="display:none"/>
+            </button> */
 
     modalBody += `
-        <label>Image: <br/>
-            <input id='editImage' required type='file' value='${objToEdit.image}'>
-        </label><br>
+        <button id="imgPick" style="cursor:pointer">Change Image</button> 
+        <input type="file" id='editImage' value='${objToEdit.image}' style="display:none"/><br><br>
         <label>Destination: <input id='editDestination' required type='text' value='${objToEdit.destination}'></label><br>
         <label>Description: <textarea id='editDescription' required type='text'>${objToEdit.description}</textarea></label><br>
         <label>From: <input id='editFromDate' required type='date' min='${minDate}' value='${fullFromDateStr}'></label><br>
