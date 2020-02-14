@@ -345,7 +345,6 @@ function onSaveAddedVacation() {
                 
                 httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                     vacationToAdd.image = imgFileName;
-                    
                     httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
                         closeModal();
                     }).catch(status => {
@@ -369,17 +368,8 @@ function onSaveAddedVacation() {
 function onEditVacation(idx, singleVacationEndPoint) {
     $(`#saveChanges${idx}`).on('click', (e) => {
         e.preventDefault();
-
-        let editedObj = {
-            id: idx,
-            destination: jQuery(`#editDestination`).val(),
-            description: jQuery(`#editDescription`).val().toLowerCase(),
-            fromDate: jQuery(`#editFromDate`).val(),
-            toDate: jQuery(`#editToDate`).val(),
-            price: jQuery(`#editPrice`).val(),
-            followers: jQuery(`#editFollowers`).val(),
-            userId: getUserId()
-        };
+        let editedObjOldValues = getVacationToEDIT(idx);
+        let editedObj = getEditedObjNewValues(idx, editedObjOldValues);
 
         let isEmpty = isValueEmpty(editedObj);
         if (isEmpty === true) {
@@ -392,19 +382,46 @@ function onEditVacation(idx, singleVacationEndPoint) {
                     const formData = createFormData(imageFile);
                     httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                         editedObj.image = imgFileName;
+                        editedObj.imageWasAdded = true;
                         httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
                             closeModal();
-                        }).catch(status => console.log(status));
+                        }).catch(status => {
+                            if(status === 400){
+                                printToHtml('modalHeader', 'The vacation already exist.')
+                            }else{
+                                console.log(status)
+                            }
+                        });
                     }).catch(status => console.log(status));
                 } else {
                     editedObj.image = jQuery(`#img${idx}`).attr('alt');
                     httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
                         closeModal();
-                    }).catch(status => console.log(status));
+                    }).catch(status => {
+                        if(status === 400){
+                            printToHtml('modalHeader', 'The vacation already exist.')
+                        }else{
+                            console.log(status)
+                        }
+                    });
                 }
             }
         }
     });
+}
+
+function getEditedObjNewValues(idx, editedObjOldValues) {
+    return {
+        id: idx,
+        destination: jQuery(`#editDestination`).val(),
+        description: jQuery(`#editDescription`).val().toLowerCase(),
+        fromDate: jQuery(`#editFromDate`).val(),
+        toDate: jQuery(`#editToDate`).val(),
+        price: jQuery(`#editPrice`).val(),
+        followers: jQuery(`#editFollowers`).val(),
+        userId: getUserId(),
+        originalObjToEdit: editedObjOldValues
+    };
 }
 
 function createFormData(imageFile) {
@@ -731,15 +748,7 @@ function getTodayDateStr() {
 }
 
 function modalBodyForUpdate(modalBody, objToUpdateId) {
-    let objToEdit = {
-        destination: $(`#destination${objToUpdateId}`).text(),
-        description: $(`#description${objToUpdateId}`).text(),
-        price: $(`#price${objToUpdateId}`).text().slice(0, -1),
-        image: $(`#img${objToUpdateId}`).attr('alt'), // TODO: find a way set image input value to old img to update,
-        fromDate: $(`#fromDate${objToUpdateId}`).text(),
-        toDate: $(`#toDate${objToUpdateId}`).text(),
-        followers: $(`#adminFollowersBtn${objToUpdateId}`).attr('value')
-    };
+    let objToEdit = getVacationToEDIT(objToUpdateId);
 
     let fullFromDateStr = formatDate(objToEdit.fromDate);
     let fullToDateStr = formatDate(objToEdit.toDate);
@@ -756,6 +765,18 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
         <input hidden id='editFollowers' value='${objToEdit.followers}'/>
         `;
     return modalBody;
+}
+
+function getVacationToEDIT(objToUpdateId) {
+    return {
+        destination: $(`#destination${objToUpdateId}`).text(),
+        description: $(`#description${objToUpdateId}`).text(),
+        price: $(`#price${objToUpdateId}`).text().slice(0, -1),
+        image: $(`#img${objToUpdateId}`).attr('alt'),
+        fromDate: $(`#fromDate${objToUpdateId}`).text(),
+        toDate: $(`#toDate${objToUpdateId}`).text(),
+        followers: $(`#adminFollowersBtn${objToUpdateId}`).attr('value')
+    };
 }
 
 function formatDate(dateToFormat) {
@@ -844,6 +865,6 @@ function onDeleteVacationEvent(deletedVacationId) {
 }
 
 function capitalizeFirstLetter(str) {
-    str = str.charAt(0).toUpperCase() + str.slice(1);
+    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     return str;
 }
