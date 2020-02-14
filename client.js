@@ -30,7 +30,7 @@ const app = {
 init();
 
 function init() {
-    navbarEventListeners();
+    eventListeners();
 
     if (!window.localStorage.getItem('userNameForTitle')) {
         loginView();
@@ -43,10 +43,10 @@ function init() {
     }
 }
 
-function navbarEventListeners() { //TODO: change func name
+function eventListeners() {
     $(document).on('click', '#chart', (e) => {
         e.preventDefault();
-        buildChart();
+        navigate('chart');
     });
 
     $(document).on('click', '#logout', (e) => {
@@ -61,7 +61,16 @@ function navbarEventListeners() { //TODO: change func name
 
     $(document).on('click', "#imgPick", (e) => {
         e.preventDefault();
-        $("#editImage").trigger('click');
+        if ($("#editImage").length > 0) {
+            $("#editImage").trigger('click');
+        } else if ($("#addedImage").length > 0) {
+            $("#addedImage").trigger('click');
+        } 
+    })
+
+    $(document).on('change', "#addedImage", (e) => {
+        e.preventDefault();
+        $("#imgPick").html('Image has been changed');
     })
 
     $(document).on('change', "#editImage", (e) => {
@@ -88,6 +97,10 @@ function navigate(url) {
             break;
         case 'register':
             registerView();
+            break;
+        case 'chart':
+            buildChart();
+            break;
     }
 }
 
@@ -692,9 +705,8 @@ function modalBodyForAdd(modalBody) {
     const minDate = getTodayDateStr();
 
     modalBody += `
-            <label>Choose an Image: 
-                <input id='addedImage' required type='file'>
-            </label><br><br>
+            <button id="imgPick" style="cursor:pointer">Change Image</button> 
+            <input type="file" id='addedImage' required style="display:none"/><br><br>
             <label>Destination: <input id='addedDestination' required type='text'></label><br>
             <label>Description: <textarea id='addedDescription' required type='text'></textarea></label><br>
             <label>From: <input id='addedFromDate' required type='date' min='${minDate}'></label><br>
@@ -723,10 +735,6 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
     let fullFromDateStr = formatDate(objToEdit.fromDate);
     let fullToDateStr = formatDate(objToEdit.toDate);
     const minDate = getTodayDateStr();
-    //<input id='editImage' type='file' value='${objToEdit.image}' hidden></input>
-    /*  <button id="upfile1" style="cursor:pointer">Change Image
-                <input type="file" id='editImage' value='${objToEdit.image}' style="display:none"/>
-            </button> */
 
     modalBody += `
         <button id="imgPick" style="cursor:pointer">Change Image</button> 
