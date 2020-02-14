@@ -1,8 +1,5 @@
 "use strict";
-//TODO: when uploading img check if exist. if so don't add again (probably will need to change uploaded file saved name);
-//TODO: check if dates is ok and no problems;
 //TODO: is there any place to use /vacation/:id?!;
-//TODO: fix chart section;
 //TODO: change lower case to upper case or vice versa if needed (for example in: registration/login, adding/updating a vacation, etc.);
 //TODO: make adding an image (when adding a vacation) possible;
 //TODO: design;
@@ -43,40 +40,51 @@ function init() {
     }
 }
 
-function eventListeners() {
-    $(document).on('click', '#chart', (e) => {
+function eventListeners() { //TODO: ask dor does it matter to write the func or multiple jquery statements 
+    doWhenIsEventActive('click', '#chart', (e) => {
         e.preventDefault();
         navigate('chart');
     });
 
-    $(document).on('click', '#logout', (e) => {
+    doWhenIsEventActive('click', '#logout', (e) => {
         e.preventDefault();
         navigate('logout');
     });
 
-    $(document).on('click', '#vacations', (e) => {
+    doWhenIsEventActive('click', '#vacations', (e) => {
         e.preventDefault();
         navigate('vacations');
     });
 
-    $(document).on('click', "#imgPick", (e) => {
+    doWhenIsEventActive('click', "#imgPick", (e) => {
         e.preventDefault();
         if ($("#editImage").length > 0) {
-            $("#editImage").trigger('click');
+            triggerFileInput('editImage');
         } else if ($("#addedImage").length > 0) {
-            $("#addedImage").trigger('click');
-        } 
+            triggerFileInput('addedImage');
+        }
     })
 
-    $(document).on('change', "#addedImage", (e) => {
+    doWhenIsEventActive('change', "#addedImage", (e) => {
         e.preventDefault();
-        $("#imgPick").html('Image has been changed');
+        printChangedBtnText('imgPick', 'Image has been added');
     })
 
-    $(document).on('change', "#editImage", (e) => {
+    doWhenIsEventActive('change', "#editImage", (e) => {
         e.preventDefault();
-        $("#imgPick").html('Image has been changed');
+        printChangedBtnText('imgPick', 'Image has been changed');
     })
+}
+
+function doWhenIsEventActive(event, id, cb) {
+    $(document).on(event, id, cb);
+}
+
+function triggerFileInput(id) {
+    $(`#${id}`).trigger('click');
+}
+function printChangedBtnText(elementId, btnText) {
+    $(`#${elementId}`).html(btnText);
 }
 
 function navigate(url) {
@@ -106,7 +114,6 @@ function navigate(url) {
 
 function buildChart() {
     const userId = getUserId();
-
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId + '&forChart=true', app.METHODS.GET).then(res => {
         removeElement('chart');
         removeElement('vacations');
@@ -121,8 +128,6 @@ function buildChart() {
                 numOfFollowers.push(numOfFollowersToArray[7]);
                 vacationsFollowed.push(numOfFollowersToArray[0] + ' (' + numOfFollowersToArray[2] + ')');
             }
-            // TODO: try to make the y labels be according to the followers value or make a min-max labels;
-            // numOfFollowers = numOfFollowers.sort((a, b) => a - b).reverse(); 
             let html = `<canvas id="myChart" style="display: block; height: 467px; width: 100%;"></canvas>`;
             printToHtml('main', html);
             console.log(numOfFollowers);
@@ -130,11 +135,11 @@ function buildChart() {
             var chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: vacationsFollowed, //vacations followed Id's
+                    labels: vacationsFollowed,
                     datasets: [{
                         label: 'Number of Followers',
                         backgroundColor: 'coral',
-                        data: numOfFollowers, // number of followers,         
+                        data: numOfFollowers,
                     }]
                 },
                 options: {
@@ -336,11 +341,15 @@ function onSaveAddedVacation() {
         } else {
             let isDateValidBoolean = isDateValid(vacationToAdd, false);
             if (isDateValidBoolean) {
+                // check if vacation already exist
+                
                 httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                     vacationToAdd.image = imgFileName;
+                    
                     httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
                         closeModal();
                     }).catch(status => {
+                        console.log(status);
                         if (status === 500) {
                             printToHtml('main', 'Internal Server Error')
                         } else if (status === 400) {
@@ -514,7 +523,7 @@ function showUserName() {
     if (!savedUserName) {
         printToHtml('userNameForTitle', `Hello <u>Guest</u>,`)
     } else {
-        let userName = savedUserName.charAt(0).toUpperCase() + savedUserName.slice(1);
+        let userName = capitalizeFirstLetter(savedUserName);
         printToHtml('userNameForTitle', `Hello <u>${userName}</u>,`)
     }
 }
@@ -705,7 +714,7 @@ function modalBodyForAdd(modalBody) {
     const minDate = getTodayDateStr();
 
     modalBody += `
-            <button id="imgPick" style="cursor:pointer">Change Image</button> 
+            <button id="imgPick" style="cursor:pointer">Choose an Image</button> 
             <input type="file" id='addedImage' required style="display:none"/><br><br>
             <label>Destination: <input id='addedDestination' required type='text'></label><br>
             <label>Description: <textarea id='addedDescription' required type='text'></textarea></label><br>
@@ -784,12 +793,13 @@ function addVacationToView(vacation) {
 }
 
 function createAdminCard(vacation) {
+    let destinationName = capitalizeFirstLetter(vacation.destination)
     return `<div id="${vacation.id}" class='card'>
                 <img id="img${vacation.id}" width='100%' height='150' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
                 <button type="button" class="btn btnDelete btn-primary btn-circle "><i id='deleteIcon${vacation.id}' class='fas fa-times'></i></button>
                 <button type="button" class="btn btnEdit btn-primary btn-circle"><i id='editIcon${vacation.id}' class="fas fa-pencil-alt"></i></button> 
                 <input hidden value='${vacation.id}'/>
-                <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
+                <div id="destination${vacation.id}"><b>${destinationName}</b></div>
                 <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
                 <div id="price${vacation.id}">${vacation.price}$</div>
                 
@@ -831,4 +841,9 @@ function onEditVacationEvent(newEditedVacationValues) {
 function onDeleteVacationEvent(deletedVacationId) {
     console.log('deleted');
     removeElement(deletedVacationId.id);
+}
+
+function capitalizeFirstLetter(str) {
+    str = str.charAt(0).toUpperCase() + str.slice(1);
+    return str;
 }
