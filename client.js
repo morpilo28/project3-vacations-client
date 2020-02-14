@@ -251,12 +251,13 @@ function printToHtml(id, html) {
     document.getElementById(id).innerHTML = html;
 }
 
-function deleteBtnEventListener(id, singleVacationEndPoint) {
-    $(`#deleteIcon${id}`).on('click', (e) => {
+function deleteBtnEventListener(vacationId, singleVacationEndPoint) {
+    $(`#deleteIcon${vacationId}`).on('click', (e) => {
         e.preventDefault();
         const data = {
-            id: e.target.id.slice(10),
-            userId: getUserId()
+            id: vacationId,
+            userId: getUserId(),
+            imageName: $(`#img${vacationId}`).attr('alt')
         };
 
         httpRequests(singleVacationEndPoint, app.METHODS.DELETE, data).then().catch(status => {
