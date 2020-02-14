@@ -1,7 +1,6 @@
 "use strict";
 //TODO: is there any place to use /vacation/:id?!;
 //TODO: change lower case to upper case or vice versa if needed (for example in: registration/login, adding/updating a vacation, etc.);
-//TODO: make adding an image (when adding a vacation) possible;
 //TODO: design;
 //TODO: needs to check for duplicate code;
 
@@ -197,9 +196,6 @@ function httpRequests(endPoint, httpVerb, reqBody) {
             headers = { 'Content-Type': 'application/json' };
         }
 
-        // TODO: if content type is set to 'multipart/form-data' - then it creates the error "Multipart: Boundary not found"
-        //const headers = reqBody instanceof FormData? { 'Content-Type': 'multipart/form-data' } : { 'Content-Type': 'application/json'}
-
         if (localStorage.getItem(app.TOKEN_LOCAL_STORAGE_KEY)) {
             headers['Authorization'] = 'bearer ' + localStorage.getItem(app.TOKEN_LOCAL_STORAGE_KEY);
         }
@@ -342,8 +338,6 @@ function onSaveAddedVacation() {
         } else {
             let isDateValidBoolean = isDateValid(vacationToAdd, false);
             if (isDateValidBoolean) {
-                // check if vacation already exist
-                
                 httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
                     vacationToAdd.image = imgFileName;
                     httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
@@ -584,8 +578,7 @@ function emptyInputs(id) {
 function followBtnListener(vacation) {
     document.getElementById(`followBtn${vacation.id}`).addEventListener('click', (e) => {
         e.preventDefault();
-        const vacationId = e.target.id.slice(9);
-        //TODO: cancel the green color after pressed btn;
+        const vacationId = e.target.id.slice(9);//TODO: check why not use vacation.id instead of e.target
         addToFollowDb(vacationId);
     })
 }
@@ -624,7 +617,6 @@ function addToFollowDb(vacationId) {
         userId: getUserId(),
         vacationId: vacationId
     };
-    //TODO: make btn background color yellow
     httpRequests(app.END_POINTS.follow, app.METHODS.POST, followObjToAdd).then(res => {
         if (res.isFollowed === true) {
             $(`#followBtn${res.vacationId}`).toggleClass('unFollowBtnColor followBtnColor');
