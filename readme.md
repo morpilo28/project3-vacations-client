@@ -40,3 +40,10 @@ user example:
   ## Project hirarchi
 
 client.js <-- (socket.io) --> Node.js (server.js --> routing (users-bl, vacations-bl) --> dal.js) --> MySQL Database
+
+ ## Project Github Links
+### Client:
+https://github.com/morpilo28/project3-vacations-client
+
+### Server:
+https://github.com/morpilo28/project3-vacations-server
