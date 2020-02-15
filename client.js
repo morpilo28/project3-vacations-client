@@ -45,7 +45,7 @@ function getUserName() {
     return window.localStorage.getItem('userNameForTitle');
 }
 
-function isAdminLogged(){
+function isAdminLogged() {
     return window.localStorage.getItem('isAdmin');
 }
 
@@ -244,12 +244,12 @@ function httpRequests(endPoint, httpVerb, reqBody) {
     })
 }
 
-function getToken(){
+function getToken() {
     return localStorage.getItem(app.TOKEN_LOCAL_STORAGE_KEY);
 }
 
 function vacationListView(vacations) {
-    showUserName();
+    printUserName();
     const _isAdminLogged = isAdminLogged();
     if (_isAdminLogged === 'true') {
         adminView(vacations)
@@ -304,7 +304,7 @@ function createUniqueBtnEventListeners(vacationsArray) {
     }
 }
 
-function onSaveAddedVacation() { 
+function onSaveAddedVacation() {
     const imageFile = (document.getElementById('addedImage')).files[0];
     if (imageFile) {
         const formData = createFormData(imageFile);
@@ -323,14 +323,17 @@ function onSaveAddedVacation() {
                     }).catch(status => {
                         console.log(status);
                         if (status === 500) {
-                            printToHtml('main', 'Internal Server Error')
+                            printToHtml('main', 'Internal Server Error');
                         } else if (status === 400) {
-                            printToHtml('modalHeader', 'The added vacation already exist.')
+                            printToHtml('modalHeader', 'The added vacation already exist.');
                         } else {
                             console.log(status);
                         }
                     });
-                }).catch(status => console.log(status));
+                }).catch(status => {
+                    console.log(status);
+                    printToHtml('modalHeader', 'File type not supported. Image type only.');
+                });
             }
         }
     } else {
@@ -390,8 +393,8 @@ function onEditVacation(idx, singleVacationEndPoint) {
         if (isEmpty === true) {
             printToHtml('modalHeader', "Can't save before filling out all the fields!");
         } else {
-            let isDateValidBoolean = isDateValid(editedObj, true);
-            if (isDateValidBoolean) {
+            let _isDateValid = isDateValid(editedObj, true);
+            if (_isDateValid) {
                 const imageFile = (document.getElementById(`editImage`)).files[0];
                 if (imageFile) {
                     const formData = createFormData(imageFile);
@@ -407,7 +410,10 @@ function onEditVacation(idx, singleVacationEndPoint) {
                                 console.log(status)
                             }
                         });
-                    }).catch(status => console.log(status));
+                    }).catch(status => {
+                        console.log(status);
+                        printToHtml('modalHeader', 'File type not supported. Image type only.');
+                    });
                 } else {
                     editedObj.image = jQuery(`#img${idx}`).attr('alt');
                     httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
@@ -423,6 +429,18 @@ function onEditVacation(idx, singleVacationEndPoint) {
             }
         }
     });
+}
+
+function getVacationToEdit(objToUpdateId) {
+    return {
+        destination: $(`#destination${objToUpdateId}`).text(),
+        description: $(`#description${objToUpdateId}`).text(),
+        price: $(`#price${objToUpdateId}`).text().slice(0, -1),
+        image: $(`#img${objToUpdateId}`).attr('alt'),
+        fromDate: $(`#fromDate${objToUpdateId}`).text(),
+        toDate: $(`#toDate${objToUpdateId}`).text(),
+        followers: $(`#adminFollowersBtn${objToUpdateId}`).attr('value')
+    };
 }
 
 function getEditedObjNewValues(idx, editedObjOldValues) {
@@ -446,8 +464,8 @@ function createFormData(imageFile) {
     return formData;
 }
 
-//TODO: see if it's needed
-function onMoreDetails(res) {
+//TODO: is needed???
+/* function onMoreDetails(res) {
     let html = `
             <div>
                 <img width='200' src="./styles/images/${res.singleVacationData.image}" alt="${res.singleVacationData.image}"/>
@@ -471,7 +489,7 @@ function onMoreDetails(res) {
         e.preventDefault();
         vacationListView(res.allVacations);
     })
-}
+} */
 
 function registerView(note) {
     note = note ? note : '';
@@ -527,8 +545,12 @@ function register() {
     });
 }
 
+function emptyInputs(id) {
+    document.getElementById(id).value = '';
+}
+
 function loginView(note) {
-    showUserName();
+    printUserName();
     note = note ? note : '';
     const html = `
 
@@ -547,20 +569,10 @@ function loginView(note) {
         e.preventDefault();
         navigate('register');
     });
-    document.getElementById('login').addEventListener('click', loginValidation);
+    document.getElementById('login').addEventListener('click', login);
 }
 
-function showUserName() {
-    const savedUserName = getUserName();
-    if (!savedUserName) {
-        printToHtml('userNameForTitle', `Hello <u>Guest</u>,`)
-    } else {
-        let userName = capitalizeFirstLetter(savedUserName);
-        printToHtml('userNameForTitle', `Hello <u>${userName}</u>,`)
-    }
-}
-
-function loginValidation() {
+function login() {
     const params = {
         userName: document.getElementById('userName').value,
         password: document.getElementById('password').value
@@ -568,10 +580,10 @@ function loginValidation() {
     httpRequests(app.END_POINTS.login, app.METHODS.POST, params).then(res => {
         emptyInputs('userName');
         emptyInputs('password');
-        window.localStorage.setItem(app.TOKEN_LOCAL_STORAGE_KEY, res.token);
-        window.localStorage.setItem('userNameForTitle', res.userName);
-        window.localStorage.setItem('userId', res.userId);
-        window.localStorage.setItem('isAdmin', res.isAdmin);
+        setItemInLocalStorage(app.TOKEN_LOCAL_STORAGE_KEY, res.token);
+        setItemInLocalStorage('userNameForTitle', res.userName);
+        setItemInLocalStorage('userId', res.userId);
+        setItemInLocalStorage('isAdmin', res.isAdmin);
         addNavigationLink('nav', 'logout', 'Logout');
         if (res.isAdmin === 'true') {
             addNavigationLink('nav', 'chart', 'Chart');
@@ -587,20 +599,22 @@ function loginValidation() {
     })
 }
 
+function setItemInLocalStorage(key, value) {
+    window.localStorage.setItem(key, value);
+}
+
+function printUserName() {
+    const savedUserName = getUserName();
+    if (!savedUserName) {
+        printToHtml('userNameForTitle', `Hello <u>Guest</u>,`)
+    } else {
+        let userName = capitalizeFirstLetter(savedUserName);
+        printToHtml('userNameForTitle', `Hello <u>${userName}</u>,`)
+    }
+}
+
 function addNavigationLink(parentElementId, elementId, linkName) {
     $(`#${parentElementId}`).append(`<a id=${elementId} href="">${linkName}</a>`);
-}
-
-function emptyInputs(id) {
-    document.getElementById(id).value = '';
-}
-
-function followBtnListener(vacation) {
-    document.getElementById(`followBtn${vacation.id}`).addEventListener('click', (e) => {
-        e.preventDefault();
-        const vacationId = e.target.id.slice(9);//TODO: check why not use vacation.id instead of e.target
-        addToFollowDb(vacationId);
-    })
 }
 
 function clientView(vacations) {
@@ -630,6 +644,71 @@ function clientView(vacations) {
             followBtnListener(allVacations[i]);
         }
     }
+}
+
+function createClientCard(vacation, isFollowed) {
+    return `<div id="${vacation.id}" class='card'>
+                <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
+                <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
+                <div id="description${vacation.id}">${vacation.description}</div>
+                <div id="price${vacation.id}">${vacation.price}$</div>
+                <div>
+                    <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
+                    <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
+                </div>
+                <button type="button" id='followBtn${vacation.id}' class="btn btnFollowPosition btn-primary btn-circle ${isFollowed} ">f</button>
+                <button id="clientFollowersBtn${vacation.id}" class="btnFollowersPosition btn btn-info btn-circle disabled unFollowBtnColor">${vacation.followers}</button>
+            </div>`;
+}
+
+function adminView(vacationsArray) {
+    removeElement('chart');
+    removeElement('vacations');
+    addNavigationLink('nav', 'chart', 'Chart');
+    const vacations = vacationsArray.organizedVacationArray ? vacationsArray.organizedVacationArray : vacationsArray;
+    let html = `
+    <h3 id='vacationListNote'> </h3>
+    <button id='add'>Add Vacation</button>
+    <div id='vacationList'>`;
+
+    if (vacations.length === 0) {
+        printToHtml('main', html);
+        printToHtml('vacationListNote', 'no vacations has been found');
+        createUniqueBtnEventListeners(vacations);
+    } else {
+        for (let i = 0; i < vacations.length; i++) {
+            html += createAdminCard(vacations[i]);
+        }
+        html += `</div>`;
+        printToHtml('main', html);
+        createUniqueBtnEventListeners(vacations);
+    }
+}
+
+function createAdminCard(vacation) {
+    let destinationName = capitalizeFirstLetter(vacation.destination)
+    return `<div id="${vacation.id}" class='card'>
+                <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
+                <button type="button" class="btn btnDelete btn-primary btn-circle "><i id='deleteIcon${vacation.id}' class='fas fa-times'></i></button>
+                <button type="button" class="btn btnEdit btn-primary btn-circle"><i id='editIcon${vacation.id}' class="fas fa-pencil-alt"></i></button> 
+                <input hidden value='${vacation.id}'/>
+                <div id="destination${vacation.id}"><b>${destinationName}</b></div>
+                <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
+                <div id="price${vacation.id}">${vacation.price}$</div>
+                
+                <div>
+                   <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
+                    <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
+                </div>
+                <input hidden id="adminFollowersBtn${vacation.id}" value='${vacation.followers}' />
+             </div>`;
+}
+
+function followBtnListener(vacation) {
+    document.getElementById(`followBtn${vacation.id}`).addEventListener('click', (e) => {
+        e.preventDefault();
+        addToFollowDb(vacation.id);
+    })
 }
 
 function addToFollowDb(vacationId) {
@@ -669,30 +748,6 @@ function updateFollowersCount(vacationId, reduceOrAdd) {
 
 function removeElement(elementToRemoveId) {
     $(`#${elementToRemoveId}`).remove();
-}
-
-function adminView(vacationsArray) {
-    removeElement('chart');
-    removeElement('vacations');
-    addNavigationLink('nav', 'chart', 'Chart');
-    const vacations = vacationsArray.organizedVacationArray ? vacationsArray.organizedVacationArray : vacationsArray;
-    let html = `
-    <h3 id='vacationListNote'> </h3>
-    <button id='add'>Add Vacation</button>
-    <div id='vacationList'>`;
-
-    if (vacations.length === 0) {
-        printToHtml('main', html);
-        printToHtml('vacationListNote', 'no vacations has been found');
-        createUniqueBtnEventListeners(vacations);
-    } else {
-        for (let i = 0; i < vacations.length; i++) {
-            html += createAdminCard(vacations[i]);
-        }
-        html += `</div>`;
-        printToHtml('main', html);
-        createUniqueBtnEventListeners(vacations);
-    }
 }
 
 function paintModalElement(saveId, objToUpdateId) {
@@ -773,18 +828,6 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
     return modalBody;
 }
 
-function getVacationToEdit(objToUpdateId) {
-    return {
-        destination: $(`#destination${objToUpdateId}`).text(),
-        description: $(`#description${objToUpdateId}`).text(),
-        price: $(`#price${objToUpdateId}`).text().slice(0, -1),
-        image: $(`#img${objToUpdateId}`).attr('alt'),
-        fromDate: $(`#fromDate${objToUpdateId}`).text(),
-        toDate: $(`#toDate${objToUpdateId}`).text(),
-        followers: $(`#adminFollowersBtn${objToUpdateId}`).attr('value')
-    };
-}
-
 function formatDate(dateToFormat) { //TODO: compare to this func on the server side and choose the better one
     let [day, month, year] = dateToFormat.split('-');
     const fullDateStr = year + '-' + month + '-' + day;
@@ -807,7 +850,7 @@ function displayVacationModal() {
 }
 
 function onAddVacationEvent(createdVacation) {
-    console.log('add');
+    console.log('added');
     addVacationToView(createdVacation);
 }
 
@@ -824,40 +867,6 @@ function addVacationToView(vacation) {
         $('#vacationList').append(html);
         followBtnListener(vacation);
     }
-}
-
-function createAdminCard(vacation) {
-    let destinationName = capitalizeFirstLetter(vacation.destination)
-    return `<div id="${vacation.id}" class='card'>
-                <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
-                <button type="button" class="btn btnDelete btn-primary btn-circle "><i id='deleteIcon${vacation.id}' class='fas fa-times'></i></button>
-                <button type="button" class="btn btnEdit btn-primary btn-circle"><i id='editIcon${vacation.id}' class="fas fa-pencil-alt"></i></button> 
-                <input hidden value='${vacation.id}'/>
-                <div id="destination${vacation.id}"><b>${destinationName}</b></div>
-                <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
-                <div id="price${vacation.id}">${vacation.price}$</div>
-                
-                <div>
-                   <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
-                    <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
-                </div>
-                <input hidden id="adminFollowersBtn${vacation.id}" value='${vacation.followers}' />
-             </div>`;
-}
-
-function createClientCard(vacation, isFollowed) {
-    return `<div id="${vacation.id}" class='card'>
-                <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
-                <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
-                <div id="description${vacation.id}">${vacation.description}</div>
-                <div id="price${vacation.id}">${vacation.price}$</div>
-                <div>
-                    <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
-                    <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
-                </div>
-                <button type="button" id='followBtn${vacation.id}' class="btn btnFollowPosition btn-primary btn-circle ${isFollowed} ">f</button>
-                <button id="clientFollowersBtn${vacation.id}" class="btnFollowersPosition btn btn-info btn-circle disabled unFollowBtnColor">${vacation.followers}</button>
-            </div>`;
 }
 
 function onEditVacationEvent(newEditedVacationValues) {
