@@ -124,7 +124,7 @@ function buildChart() {
         removeElement('vacations');
         addNavigationLink('nav', 'vacations', 'Vacation List');
         if (res.length === 0) {
-            printToHtml('main', `<div><b>No vacation has been followed yet!</b></div>`);
+            printToHtml('main', `<h3><b>No vacation has been followed yet!</b></h3>`);
         } else {
             let numOfFollowers = [];
             let vacationsFollowed = [];
@@ -595,7 +595,7 @@ function clientView(vacations) {
     let followedVacations = vacations.userFollowedVacationsIds;
 
     if (allVacations.length === 0) {
-        printToHtml('main', 'No vacations have been found!');
+        printToHtml('main', `<h3><b> No vacations have been found!</b></h3>`);
     } else {
         let html = `<div id="vacationList">`;
         let isFollowed = 'unFollowBtnColor';
@@ -620,10 +620,11 @@ function clientView(vacations) {
 }
 
 function createClientCard(vacation, isFollowed) {
+    let destinationName = capitalizeFirstLetter(vacation.destination);
     return `<div id="${vacation.id}" class='card'>
                 <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
-                <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
-                <div id="description${vacation.id}">${vacation.description}</div>
+                <div id="destination${vacation.id}"><b>${destinationName}</b></div>
+                <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
                 <div id="price${vacation.id}">${vacation.price}$</div>
                 <div>
                     <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
@@ -646,7 +647,7 @@ function adminView(vacationsArray) {
 
     if (vacations.length === 0) {
         printToHtml('main', html);
-        printToHtml('vacationListNote', 'no vacations has been found');
+        printToHtml('vacationListNote', `<b>no vacations has been found</b>`);
         createUniqueBtnEventListeners(vacations);
     } else {
         for (let i = 0; i < vacations.length; i++) {
@@ -668,7 +669,6 @@ function createAdminCard(vacation) {
                 <div id="destination${vacation.id}"><b>${destinationName}</b></div>
                 <textarea readonly id="description${vacation.id}" class="cardTextArea">${vacation.description}</textarea>
                 <div id="price${vacation.id}">${vacation.price}$</div>
-                
                 <div>
                    <div>From: <span id="fromDate${vacation.id}">${vacation.fromDate}</span></div> 
                     <div>To: <span id="toDate${vacation.id}">${vacation.toDate}</span></div>
@@ -841,8 +841,16 @@ function addVacationToView(vacation) {
 }
 
 function onEditVacationEvent(newEditedVacationValues) {
+    // const _isAdminLogged = isAdminLogged();
+    // if (_isAdminLogged === 'true') {
+    //
+    // } else if (_isAdminLogged === 'false') {
+    //
+    // }
+
     console.log('edited');
-    $(`#destination${newEditedVacationValues.id}`).replaceWith(`<div id="destination${newEditedVacationValues.id}"><b>${newEditedVacationValues.destination}</b></div>`);
+    let destinationName = capitalizeFirstLetter(newEditedVacationValues.destination);
+    $(`#destination${newEditedVacationValues.id}`).replaceWith(`<div id="destination${newEditedVacationValues.id}"><b>${destinationName}</b></div>`);
     $(`#description${newEditedVacationValues.id}`).text(newEditedVacationValues.description);
     $(`#price${newEditedVacationValues.id}`).text(`${newEditedVacationValues.price}$`);
     $(`#img${newEditedVacationValues.id}`).attr("src", `${app.ImgBaseUrl + newEditedVacationValues.image}`).attr("alt", newEditedVacationValues.image);
