@@ -1,12 +1,13 @@
 "use strict";
 //TODO: is there any place to use /vacation/:id?!;
 //TODO: change lower case to upper case or vice versa if needed (for example in: registration/login, adding/updating a vacation, etc.);
+//TODO: check all  statuses and statuses messages;
 //TODO: design;
 //TODO: needs to check for duplicate code;
 
 const app = {
     baseEndPoint: `http://localhost:3201/`,
-    serverImgBaseUrl: 'http://localhost:3201/images/',
+    ImgBaseUrl: 'http://localhost:3201/images/',
     END_POINTS: {
         vacations: 'vacations',
         login: 'login',
@@ -27,11 +28,12 @@ init();
 
 function init() {
     eventListeners();
-
-    if (!window.localStorage.getItem('userNameForTitle')) {
+    const userName = getUserName();
+    if (!userName) {
         loginView();
     } else {
-        if (window.localStorage.getItem('isAdmin') === 'true') {
+        const _isAdminLogged = isAdminLogged();
+        if (_isAdminLogged === 'true') {
             addNavigationLink('nav', 'chart', 'Chart');
         }
         addNavigationLink('nav', 'logout', 'Logout');
@@ -39,23 +41,31 @@ function init() {
     }
 }
 
+function getUserName() {
+    return window.localStorage.getItem('userNameForTitle');
+}
+
+function isAdminLogged(){
+    return window.localStorage.getItem('isAdmin');
+}
+
 function eventListeners() { //TODO: ask dor does it matter to write the func or multiple jquery statements 
-    doWhenIsEventActive('click', '#chart', (e) => {
+    onActiveEvent('click', '#chart', (e) => {
         e.preventDefault();
         navigate('chart');
     });
 
-    doWhenIsEventActive('click', '#logout', (e) => {
+    onActiveEvent('click', '#logout', (e) => {
         e.preventDefault();
         navigate('logout');
     });
 
-    doWhenIsEventActive('click', '#vacations', (e) => {
+    onActiveEvent('click', '#vacations', (e) => {
         e.preventDefault();
         navigate('vacations');
     });
 
-    doWhenIsEventActive('click', "#imgPick", (e) => {
+    onActiveEvent('click', "#imgPick", (e) => {
         e.preventDefault();
         if ($("#editImage").length > 0) {
             triggerFileInput('editImage');
@@ -64,26 +74,15 @@ function eventListeners() { //TODO: ask dor does it matter to write the func or 
         }
     })
 
-    doWhenIsEventActive('change', "#addedImage", (e) => {
+    onActiveEvent('change', "#addedImage", (e) => {
         e.preventDefault();
-        printChangedBtnText('imgPick', 'Image has been added');
+        printChangedBtnText('imgPick', 'Image has been chosen');
     })
 
-    doWhenIsEventActive('change', "#editImage", (e) => {
+    onActiveEvent('change', "#editImage", (e) => {
         e.preventDefault();
         printChangedBtnText('imgPick', 'Image has been changed');
     })
-}
-
-function doWhenIsEventActive(event, id, cb) {
-    $(document).on(event, id, cb);
-}
-
-function triggerFileInput(id) {
-    $(`#${id}`).trigger('click');
-}
-function printChangedBtnText(elementId, btnText) {
-    $(`#${elementId}`).html(btnText);
 }
 
 function navigate(url) {
@@ -93,7 +92,7 @@ function navigate(url) {
             loginView();
             break;
         case 'vacations':
-            showVacationList();
+            getVacationList();
             break;
         case 'logout':
             removeElement('chart');
@@ -109,6 +108,18 @@ function navigate(url) {
             buildChart();
             break;
     }
+}
+
+function onActiveEvent(event, id, cb) {
+    $(document).on(event, id, cb);
+}
+
+function triggerFileInput(id) {
+    $(`#${id}`).trigger('click');
+}
+
+function printChangedBtnText(elementId, btnText) {
+    $(`#${elementId}`).html(btnText);
 }
 
 function buildChart() {
@@ -129,7 +140,6 @@ function buildChart() {
             }
             let html = `<canvas id="myChart" style="display: block; height: 467px; width: 100%;"></canvas>`;
             printToHtml('main', html);
-            console.log(numOfFollowers);
             var ctx = document.getElementById('myChart').getContext('2d');
             var chart = new Chart(ctx, {
                 type: 'bar',
@@ -177,10 +187,10 @@ function getUserId() {
     return window.localStorage.getItem('userId');
 }
 
-function showVacationList() {
+function getVacationList() {
     const userId = getUserId();
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId, app.METHODS.GET).then(res => vacationListView(res)).catch(status => {
-        if (status === 500) {
+        if (status === 500) { // TODO: do like this where is missing
             printToHtml('main', 'Internal Server Error');
         } else {
             console.log(status);
@@ -196,8 +206,9 @@ function httpRequests(endPoint, httpVerb, reqBody) {
             headers = { 'Content-Type': 'application/json' };
         }
 
-        if (localStorage.getItem(app.TOKEN_LOCAL_STORAGE_KEY)) {
-            headers['Authorization'] = 'bearer ' + localStorage.getItem(app.TOKEN_LOCAL_STORAGE_KEY);
+        const token = getToken();
+        if (token) {
+            headers['Authorization'] = 'bearer ' + token;
         }
 
         const fetchOptions = {
@@ -233,9 +244,14 @@ function httpRequests(endPoint, httpVerb, reqBody) {
     })
 }
 
+function getToken(){
+    return localStorage.getItem(app.TOKEN_LOCAL_STORAGE_KEY);
+}
+
 function vacationListView(vacations) {
     showUserName();
-    if (window.localStorage.getItem('isAdmin') === 'true') {
+    const _isAdminLogged = isAdminLogged();
+    if (_isAdminLogged === 'true') {
         adminView(vacations)
     } else {
         clientView(vacations);
@@ -270,11 +286,11 @@ function editBtnEventListener(vacationId, singleVacationEndPoint) {
     $(`#editIcon${vacationId}`).on('click', (e) => {
         e.preventDefault();
         paintModalElement(`saveChanges${vacationId}`, vacationId);
-        onEditVacation(vacationId, singleVacationEndPoint);
+        onEditVacation(vacationId, singleVacationEndPoint);//TODO: continue code review from here
     });
 }
 
-function addBtnEventListeners(vacationsArray) {
+function createUniqueBtnEventListeners(vacationsArray) {
     $('#add').on('click', (e) => {
         e.preventDefault();
         paintModalElement('save');
@@ -286,6 +302,61 @@ function addBtnEventListeners(vacationsArray) {
         editBtnEventListener(id, singleVacationEndPoint);
         deleteBtnEventListener(id, singleVacationEndPoint);
     }
+}
+
+function onSaveAddedVacation() { 
+    const imageFile = (document.getElementById('addedImage')).files[0];
+    if (imageFile) {
+        const formData = createFormData(imageFile);
+        let vacationToAdd = getVacationToAdd();
+        let isEmpty = isValueEmpty(vacationToAdd);
+
+        if (isEmpty === true) {
+            printToHtml('modalHeader', "Can't save before filling out all the fields!");
+        } else {
+            let _isDateValid = isDateValid(vacationToAdd, false);
+            if (_isDateValid) {
+                httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
+                    vacationToAdd.image = imgFileName;
+                    httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
+                        closeModal();
+                    }).catch(status => {
+                        console.log(status);
+                        if (status === 500) {
+                            printToHtml('main', 'Internal Server Error')
+                        } else if (status === 400) {
+                            printToHtml('modalHeader', 'The added vacation already exist.')
+                        } else {
+                            console.log(status);
+                        }
+                    });
+                }).catch(status => console.log(status));
+            }
+        }
+    } else {
+        printToHtml('modalHeader', "Please choose a picture!");
+    }
+}
+
+function getVacationToAdd() {
+    return {
+        destination: document.getElementById(`addedDestination`).value,
+        description: (document.getElementById(`addedDescription`).value).toLowerCase(),
+        fromDate: document.getElementById(`addedFromDate`).value,
+        toDate: document.getElementById(`addedToDate`).value,
+        price: document.getElementById(`addedPrice`).value,
+        followers: 0
+    };
+}
+
+function isValueEmpty(vacationToAdd) {
+    let isEmpty = false;
+    Object.values(vacationToAdd).forEach(value => {
+        if (value === '') {
+            isEmpty = true
+        }
+    });
+    return isEmpty;
 }
 
 function isDateValid(vacationToAdd, isOnEdit) {
@@ -309,61 +380,10 @@ function isDateValid(vacationToAdd, isOnEdit) {
     }
 }
 
-function isValueEmpty(vacationToAdd) {
-    let isEmpty = false;
-    Object.values(vacationToAdd).forEach(value => {
-        if (value === '') {
-            isEmpty = true
-        }
-    });
-    return isEmpty;
-}
-
-function onSaveAddedVacation() {
-    const imageFile = (document.getElementById('addedImage')).files[0];
-    if (imageFile) {
-        const formData = createFormData(imageFile);
-        let vacationToAdd = {
-            destination: document.getElementById(`addedDestination`).value,
-            description: (document.getElementById(`addedDescription`).value).toLowerCase(),
-            fromDate: document.getElementById(`addedFromDate`).value,
-            toDate: document.getElementById(`addedToDate`).value,
-            price: document.getElementById(`addedPrice`).value,
-            followers: 0
-        };
-        let isEmpty = isValueEmpty(vacationToAdd);
-
-        if (isEmpty === true) {
-            printToHtml('modalHeader', "Can't save before filling out all the fields!");
-        } else {
-            let isDateValidBoolean = isDateValid(vacationToAdd, false);
-            if (isDateValidBoolean) {
-                httpRequests(app.END_POINTS.uploadImg, app.METHODS.POST, formData).then(imgFileName => {
-                    vacationToAdd.image = imgFileName;
-                    httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
-                        closeModal();
-                    }).catch(status => {
-                        console.log(status);
-                        if (status === 500) {
-                            printToHtml('main', 'Internal Server Error')
-                        } else if (status === 400) {
-                            printToHtml('modalHeader', 'The added vacation already exist.')
-                        } else {
-                            console.log(status);
-                        }
-                    });
-                }).catch(status => console.log(status));
-            }
-        }
-    } else {
-        printToHtml('modalHeader', "Please choose a picture!");
-    }
-}
-
 function onEditVacation(idx, singleVacationEndPoint) {
     $(`#saveChanges${idx}`).on('click', (e) => {
         e.preventDefault();
-        let editedObjOldValues = getVacationToEDIT(idx);
+        let editedObjOldValues = getVacationToEdit(idx);
         let editedObj = getEditedObjNewValues(idx, editedObjOldValues);
 
         let isEmpty = isValueEmpty(editedObj);
@@ -381,9 +401,9 @@ function onEditVacation(idx, singleVacationEndPoint) {
                         httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
                             closeModal();
                         }).catch(status => {
-                            if(status === 400){
+                            if (status === 400) {
                                 printToHtml('modalHeader', 'The vacation already exist.')
-                            }else{
+                            } else {
                                 console.log(status)
                             }
                         });
@@ -393,9 +413,9 @@ function onEditVacation(idx, singleVacationEndPoint) {
                     httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
                         closeModal();
                     }).catch(status => {
-                        if(status === 400){
+                        if (status === 400) {
                             printToHtml('modalHeader', 'The vacation already exist.')
-                        }else{
+                        } else {
                             console.log(status)
                         }
                     });
@@ -531,7 +551,7 @@ function loginView(note) {
 }
 
 function showUserName() {
-    const savedUserName = window.localStorage.getItem('userNameForTitle');
+    const savedUserName = getUserName();
     if (!savedUserName) {
         printToHtml('userNameForTitle', `Hello <u>Guest</u>,`)
     } else {
@@ -664,14 +684,14 @@ function adminView(vacationsArray) {
     if (vacations.length === 0) {
         printToHtml('main', html);
         printToHtml('vacationListNote', 'no vacations has been found');
-        addBtnEventListeners(vacations);
+        createUniqueBtnEventListeners(vacations);
     } else {
         for (let i = 0; i < vacations.length; i++) {
             html += createAdminCard(vacations[i]);
         }
         html += `</div>`;
         printToHtml('main', html);
-        addBtnEventListeners(vacations);
+        createUniqueBtnEventListeners(vacations);
     }
 }
 
@@ -734,15 +754,8 @@ function modalBodyForAdd(modalBody) {
     return modalBody;
 }
 
-function getTodayDateStr() {
-    const date = new Date();
-    const dateFormatted = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
-    return dateFormatted;
-}
-
 function modalBodyForUpdate(modalBody, objToUpdateId) {
-    let objToEdit = getVacationToEDIT(objToUpdateId);
-
+    let objToEdit = getVacationToEdit(objToUpdateId);
     let fullFromDateStr = formatDate(objToEdit.fromDate);
     let fullToDateStr = formatDate(objToEdit.toDate);
     const minDate = getTodayDateStr();
@@ -760,7 +773,7 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
     return modalBody;
 }
 
-function getVacationToEDIT(objToUpdateId) {
+function getVacationToEdit(objToUpdateId) {
     return {
         destination: $(`#destination${objToUpdateId}`).text(),
         description: $(`#description${objToUpdateId}`).text(),
@@ -772,10 +785,16 @@ function getVacationToEDIT(objToUpdateId) {
     };
 }
 
-function formatDate(dateToFormat) {
+function formatDate(dateToFormat) { //TODO: compare to this func on the server side and choose the better one
     let [day, month, year] = dateToFormat.split('-');
     const fullDateStr = year + '-' + month + '-' + day;
     return fullDateStr;
+}
+
+function getTodayDateStr() {
+    const date = new Date();
+    const dateFormatted = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+    return dateFormatted;
 }
 
 function closeModal() {
@@ -793,13 +812,14 @@ function onAddVacationEvent(createdVacation) {
 }
 
 function addVacationToView(vacation) {
-    if (window.localStorage.getItem('isAdmin') === 'true') {
+    const _isAdminLogged = isAdminLogged();
+    if (_isAdminLogged === 'true') {
         let singleEndPoint = `vacations/${vacation.id}`;
         let html = createAdminCard(vacation);
         $('#vacationList').append(html);
         deleteBtnEventListener(vacation.id, singleEndPoint);
         editBtnEventListener(vacation.id, singleEndPoint);
-    } else if (window.localStorage.getItem('isAdmin') === 'false') {
+    } else if (_isAdminLogged === 'false') {
         let html = createClientCard(vacation, 'unFollowBtnColor');
         $('#vacationList').append(html);
         followBtnListener(vacation);
@@ -809,7 +829,7 @@ function addVacationToView(vacation) {
 function createAdminCard(vacation) {
     let destinationName = capitalizeFirstLetter(vacation.destination)
     return `<div id="${vacation.id}" class='card'>
-                <img id="img${vacation.id}" width='100%' height='150' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
+                <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
                 <button type="button" class="btn btnDelete btn-primary btn-circle "><i id='deleteIcon${vacation.id}' class='fas fa-times'></i></button>
                 <button type="button" class="btn btnEdit btn-primary btn-circle"><i id='editIcon${vacation.id}' class="fas fa-pencil-alt"></i></button> 
                 <input hidden value='${vacation.id}'/>
@@ -827,7 +847,7 @@ function createAdminCard(vacation) {
 
 function createClientCard(vacation, isFollowed) {
     return `<div id="${vacation.id}" class='card'>
-                <img id="img${vacation.id}" width='100%' height='150' src="${app.serverImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
+                <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
                 <div id="destination${vacation.id}"><b>${vacation.destination}</b></div>
                 <div id="description${vacation.id}">${vacation.description}</div>
                 <div id="price${vacation.id}">${vacation.price}$</div>
@@ -845,7 +865,7 @@ function onEditVacationEvent(newEditedVacationValues) {
     $(`#destination${newEditedVacationValues.id}`).replaceWith(`<div id="destination${newEditedVacationValues.id}"><b>${newEditedVacationValues.destination}</b></div>`);
     $(`#description${newEditedVacationValues.id}`).text(newEditedVacationValues.description);
     $(`#price${newEditedVacationValues.id}`).text(`${newEditedVacationValues.price}$`);
-    $(`#img${newEditedVacationValues.id}`).attr("src", `${app.serverImgBaseUrl + newEditedVacationValues.image}`).attr("alt", newEditedVacationValues.image);
+    $(`#img${newEditedVacationValues.id}`).attr("src", `${app.ImgBaseUrl + newEditedVacationValues.image}`).attr("alt", newEditedVacationValues.image);
     $(`#fromDate${newEditedVacationValues.id}`).text(newEditedVacationValues.fromDate);
     $(`#toDate${newEditedVacationValues.id}`).text(newEditedVacationValues.toDate);
     $(`#clientFollowersBtn${newEditedVacationValues.id}`).text(newEditedVacationValues.followers);
