@@ -1,9 +1,4 @@
 "use strict";
-//TODO: is there any place to use /vacation/:id?!;
-//TODO: change lower case to upper case or vice versa if needed (for example in: registration/login, adding/updating a vacation, etc.);
-//TODO: check all  statuses and statuses messages;
-//TODO: design;
-//TODO: needs to check for duplicate code;
 
 const app = {
     baseEndPoint: `http://localhost:3201/`,
@@ -49,7 +44,7 @@ function isAdminLogged() {
     return window.localStorage.getItem('isAdmin');
 }
 
-function eventListeners() { //TODO: ask dor does it matter to write the func or multiple jquery statements 
+function eventListeners() {
     onActiveEvent('click', '#chart', (e) => {
         e.preventDefault();
         navigate('chart');
@@ -72,12 +67,12 @@ function eventListeners() { //TODO: ask dor does it matter to write the func or 
         } else if ($("#addedImage").length > 0) {
             triggerFileInput('addedImage');
         }
-    })
+    });
 
     onActiveEvent('change', "#addedImage", (e) => {
         e.preventDefault();
         printChangedBtnText('imgPick', 'Image has been chosen');
-    })
+    });
 
     onActiveEvent('change', "#editImage", (e) => {
         e.preventDefault();
@@ -190,8 +185,10 @@ function getUserId() {
 function getVacationList() {
     const userId = getUserId();
     httpRequests(app.END_POINTS.vacations + '?userId=' + userId, app.METHODS.GET).then(res => vacationListView(res)).catch(status => {
-        if (status === 500) { // TODO: do like this where is missing
+        if (status === 500) {
             printToHtml('main', 'Internal Server Error');
+        } else if (status === 401) {
+            printToHtml('main', 'Area for members only! Please Login to show the list');
         } else {
             console.log(status);
         }
@@ -203,7 +200,7 @@ function httpRequests(endPoint, httpVerb, reqBody) {
         let headers = {};
 
         if (!(reqBody instanceof FormData) || !reqBody) {
-            headers = { 'Content-Type': 'application/json' };
+            headers = {'Content-Type': 'application/json'};
         }
 
         const token = getToken();
@@ -229,8 +226,6 @@ function httpRequests(endPoint, httpVerb, reqBody) {
             if (responseData.status !== 200) {
                 reject(responseData.status);
             }
-            //TODO: what happens when dataType is null (admin.js:264 Uncaught (in promise) TypeError: Cannot read property 'indexOf' of null)
-            //TODO: check if this next statement is suitable to address the problem of null data type
 
             dataType = !dataType ? 'text/html; charset=utf-8' : dataType;
             if (dataType.indexOf('json') > -1) {
@@ -274,7 +269,9 @@ function deleteBtnEventListener(vacationId, singleVacationEndPoint) {
 
         httpRequests(singleVacationEndPoint, app.METHODS.DELETE, data).then().catch(status => {
             if (status === 500) {
-                printToHtml('main', 'Internal Server Error')
+                printToHtml('main', 'Internal Server Error');
+            } else if (status === 401) {
+                printToHtml('main', 'Area for members only! Please Login to show the list');
             } else {
                 console.log(status);
             }
@@ -286,7 +283,7 @@ function editBtnEventListener(vacationId, singleVacationEndPoint) {
     $(`#editIcon${vacationId}`).on('click', (e) => {
         e.preventDefault();
         paintModalElement(`saveChanges${vacationId}`, vacationId);
-        onEditVacation(vacationId, singleVacationEndPoint);//TODO: continue code review from here
+        onEditVacation(vacationId, singleVacationEndPoint);
     });
 }
 
@@ -321,9 +318,10 @@ function onSaveAddedVacation() {
                     httpRequests(app.END_POINTS.vacations, app.METHODS.POST, vacationToAdd).then(res => {
                         closeModal();
                     }).catch(status => {
-                        console.log(status);
                         if (status === 500) {
                             printToHtml('main', 'Internal Server Error');
+                        } else if (status === 401) {
+                            printToHtml('main', 'Area for members only! Please Login to show the list');
                         } else if (status === 400) {
                             printToHtml('modalHeader', 'The added vacation already exist.');
                         } else {
@@ -419,10 +417,14 @@ function onEditVacation(idx, singleVacationEndPoint) {
                     httpRequests(singleVacationEndPoint, app.METHODS.PUT, editedObj).then(res => {
                         closeModal();
                     }).catch(status => {
-                        if (status === 400) {
-                            printToHtml('modalHeader', 'The vacation already exist.')
+                        if (status === 500) {
+                            printToHtml('main', 'Internal Server Error');
+                        } else if (status === 401) {
+                            printToHtml('main', 'Area for members only! Please Login to show the list');
+                        } else if (status === 400) {
+                            printToHtml('modalHeader', 'The vacation already exist.');
                         } else {
-                            console.log(status)
+                            console.log(status);
                         }
                     });
                 }
@@ -463,33 +465,6 @@ function createFormData(imageFile) {
 
     return formData;
 }
-
-//TODO: is needed???
-/* function onMoreDetails(res) {
-    let html = `
-            <div>
-                <img width='200' src="./styles/images/${res.singleVacationData.image}" alt="${res.singleVacationData.image}"/>
-                <br><br>
-                description: ${res.singleVacationData.description}
-                <br><br>
-                destination: ${res.singleVacationData.destination}
-                <br><br>
-                from: ${res.singleVacationData.fromDate}
-                <br><br>
-                To: ${res.singleVacationData.toDate}
-                <br><br>
-                price: ${res.singleVacationData.price}
-                <br><br>
-                <button id='returnToFullList'>Return To Full List</button>
-            </div>
-            `;
-    printToHtml('main', html);
-
-    document.getElementById('returnToFullList').addEventListener('click', (e) => {
-        e.preventDefault();
-        vacationListView(res.allVacations);
-    })
-} */
 
 function registerView(note) {
     note = note ? note : '';
@@ -536,7 +511,6 @@ function register() {
         }
         navigate('login');
     }).catch(status => {
-        console.log(status);
         if (status === 400) {
             registerView('user name taken. please select a different name');
         } else {
@@ -590,7 +564,6 @@ function login() {
         }
         navigate('vacations');
     }).catch(status => {
-        console.log(status);
         if (status === 400) {
             loginView('User Not Found');
         } else {
@@ -686,7 +659,7 @@ function adminView(vacationsArray) {
 }
 
 function createAdminCard(vacation) {
-    let destinationName = capitalizeFirstLetter(vacation.destination)
+    let destinationName = capitalizeFirstLetter(vacation.destination);
     return `<div id="${vacation.id}" class='card'>
                 <img id="img${vacation.id}" width='100%' height='150' src="${app.ImgBaseUrl + vacation.image}" alt="${vacation.image}"/>
                 <button type="button" class="btn btnDelete btn-primary btn-circle "><i id='deleteIcon${vacation.id}' class='fas fa-times'></i></button>
@@ -828,16 +801,14 @@ function modalBodyForUpdate(modalBody, objToUpdateId) {
     return modalBody;
 }
 
-function formatDate(dateToFormat) { //TODO: compare to this func on the server side and choose the better one
+function formatDate(dateToFormat) {
     let [day, month, year] = dateToFormat.split('-');
-    const fullDateStr = year + '-' + month + '-' + day;
-    return fullDateStr;
+    return year + '-' + month + '-' + day;
 }
 
 function getTodayDateStr() {
     const date = new Date();
-    const dateFormatted = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
-    return dateFormatted;
+    return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
 }
 
 function closeModal() {
